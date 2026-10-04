@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fourier Optics for Inference 01 — Fourier Optics for Engineers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Geist+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1c1815;
+            --bg-card: #231e1a;
+            --bg-code: #2b2520;
+            --text-primary: #efe8dc;
+            --text-secondary: #a2978b;
+            --accent: #aabd59;
+            --accent-dim: #aabd5944;
+            --accent-glow: #aabd5933;
+            --border: #3a322b;
+            --font-display: 'Bricolage Grotesque', sans-serif;
+            --font-mono: 'Geist Mono', 'Geist Mono', monospace;
+            --font-body: 'Instrument Sans', sans-serif;
+            --max-width: 900px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ── Header ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .series-label {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 .accent {
+            color: var(--accent);
+        }
+
+        .hero .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Tag Pills ── */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            white-space: nowrap;
+        }
+
+        /* ── Pipeline Flow Bar ── */
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+            max-width: var(--max-width);
+        }
+
+        .pipeline-step {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 0.3rem 0.7rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .pipeline-arrow {
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        /* ── Slides ── */
+        .slide {
+            min-height: 100vh;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-number {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--accent-dim);
+            position: absolute;
+            top: 2rem;
+            right: 1.5rem;
+            line-height: 1;
+            user-select: none;
+        }
+
+        .slide h2 {
+            font-family: var(--font-display);
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
+        }
+
+        .slide h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .slide p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .slide p strong {
+            color: var(--text-primary);
+        }
+
+        .slide ul, .slide ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .slide li {
+            margin-bottom: 0.4rem;
+        }
+
+        .slide li strong {
+            color: var(--text-primary);
+        }
+
+        /* ── Code Blocks ── */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1.25rem 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+            padding: 0.4rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #dad1c5;
+        }
+
+        /* Syntax highlighting (manual) */
+        .kw { color: #de805a; }
+        .fn { color: #d7bbdf; }
+        .str { color: #bcdbd4; }
+        .cm { color: #a2978b; font-style: italic; }
+        .num { color: #97cdc6; }
+        .type { color: #e3b174; }
+        .dir { color: #de805a; }
+        .mac { color: #e3b174; }
+
+        /* ── Tables ── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-display);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) td {
+            background: rgba(35,30,26,0.5);
+        }
+
+        /* ── Diagrams ── */
+        .diagram-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-box {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .diagram-box.accent {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+        }
+
+        .diagram-box.dim {
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+
+        .diagram-arrow {
+            color: var(--accent);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Vertical flow diagrams */
+        .diagram-vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-vertical .diagram-arrow {
+            font-size: 1.1rem;
+        }
+
+        /* Nested hierarchy diagram */
+        .hierarchy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .hierarchy-level {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .hierarchy-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .hierarchy-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .hierarchy-item {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .hierarchy-item.accent {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+        }
+
+        /* Grid diagram */
+        .diagram-grid {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-grid.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .diagram-grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .diagram-panel {
+            padding: 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .diagram-panel.accent-border {
+            border-left: 3px solid var(--accent);
+        }
+
+        .diagram-panel h4 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-panel p, .diagram-panel ul {
+            font-size: 0.85rem;
+        }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+        }
+
+        .callout p {
+            margin-bottom: 0;
+        }
+
+        .callout .callout-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ── Tier Visual ── */
+        .tier-visual {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .tier-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tier-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 90px;
+            text-align: right;
+        }
+
+        .tier-fill {
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            white-space: nowrap;
+            transition: width 0.6s ease;
+        }
+
+        .tier-cost {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            min-width: 70px;
+        }
+
+        /* ── Contents list ── */
+        .contents-list {
+            list-style: none;
+            padding-left: 0;
+            counter-reset: contents;
+        }
+
+        .contents-list li {
+            counter-increment: contents;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .contents-list li:last-child {
+            border-bottom: none;
+        }
+
+        .contents-list li::before {
+            content: counter(contents, decimal-leading-zero);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 2rem;
+        }
+
+        .contents-list a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .contents-list a:hover {
+            color: var(--accent);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .slide {
+                padding: 3rem 1rem;
+                min-height: auto;
+            }
+
+            .slide-number {
+                font-size: 3rem;
+                top: 1.5rem;
+                right: 1rem;
+            }
+
+            .slide h2 {
+                font-size: 1.5rem;
+            }
+
+            .diagram-grid.cols-2,
+            .diagram-grid.cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .pipeline {
+                gap: 0.15rem;
+            }
+
+            .pipeline-step {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            table {
+                font-size: 0.78rem;
+            }
+
+            .tier-label {
+                min-width: 60px;
+                font-size: 0.65rem;
+            }
+
+            .tier-fill {
+                font-size: 0.6rem;
+                height: 26px;
+            }
+        }
+
+        /* ── Interactive controls (added for Local LLM series) ── */
+        .control-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1.25rem 0;
+        }
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .control-row label {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 180px;
+        }
+        .control-row input[type="range"] {
+            flex: 1;
+            min-width: 160px;
+            accent-color: var(--accent);
+        }
+        .control-row input[type="number"],
+        .control-row select {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: 4px;
+            padding: 0.3rem 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .control-row .val {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 80px;
+            text-align: right;
+        }
+        .btn {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.9rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .btn:hover { background: rgba(170,189,89,0.2); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn.secondary {
+            background: var(--bg-code);
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+        .result-box {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            margin-top: 0.75rem;
+        }
+        .result-box .line-label { color: var(--text-secondary); }
+        .result-box .line-val   { color: var(--accent); font-weight: 600; }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .metric {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            text-align: center;
+        }
+        .metric .metric-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .metric .metric-value {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: 0.2rem;
+        }
+
+        /* Canvas / SVG containers */
+        .canvas-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.25rem 0;
+            overflow-x: auto;
+        }
+        .canvas-wrap canvas,
+        .canvas-wrap svg {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        /* Small inline badge */
+        .badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            vertical-align: middle;
+            margin-left: 0.3rem;
+        }
+        .badge.ok    { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .badge.warn  { border-color: #e3b174; color: #e3b174; background: rgba(227,177,116,0.08); }
+        .badge.bad   { border-color: #de805a; color: #de805a; background: rgba(222,128,90,0.08); }
+
+
+        /* ── LLM Inference Simulators additions ── */
+        .canvas-wrap canvas { image-rendering: auto; display: block; width: 100%; height: auto; }
+        .canvas-wrap svg { max-width: 100%; height: auto; }
+        .ladder { display: grid; gap: 0.4rem; margin: 1.25rem 0; }
+        .ladder-row {
+            display: grid; grid-template-columns: 11rem 1fr 7.5rem; gap: 0.75rem; align-items: center;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+            padding: 0.55rem 0.85rem; font-size: 0.88rem;
+        }
+        .ladder-row .rung { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+        .ladder-row .speed { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); text-align: right; }
+        .res-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+        .res-list li { padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+        .res-list li:last-child { border-bottom: none; }
+        .res-list .what { color: var(--text-secondary); display: block; font-size: 0.86rem; margin-top: 0.15rem; }
+        .res-list a { color: var(--accent); text-decoration: none; }
+        .res-list a:hover { text-decoration: underline; }
+        .qa { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin: 0.6rem 0; padding: 0.2rem 1rem; }
+        .qa summary { cursor: pointer; padding: 0.6rem 0; font-weight: 600; }
+        .qa p, .qa ul { margin-bottom: 0.75rem; font-size: 0.92rem; }
+        .sim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.4rem 1.25rem; }
+        .chart-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .chart-title { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.3rem; }
+        .slide a { color: var(--accent); }
+        @media (max-width: 640px) {
+            .ladder-row { grid-template-columns: 1fr; gap: 0.2rem; }
+            .ladder-row .speed { text-align: left; }
+        }
+        .concepts { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 0.75rem 1rem; margin-top: 1.25rem; font-size: 0.88rem; }
+        .concepts p { margin: 0 0 0.4rem; color: var(--text-secondary); }
+        .concepts .chips { display: flex; flex-wrap: wrap; gap: 0.35rem 0.5rem; }
+        .concepts .chips a { border: 1px solid var(--border); border-radius: 999px; padding: 0.1rem 0.6rem; text-decoration: none; font-size: 0.82rem; }
+        .concepts .chips a:hover { border-color: var(--accent); }
+        .hero { overflow: hidden; }   /* the 600px glow must not widen the page on phones */
+        .chart-pair > *, .diagram-grid > *, .sim-grid > * { min-width: 0; }   /* let wide code scroll inside its column */
+        .slide p code, .slide li code, .slide td code { overflow-wrap: anywhere; }
+        @media (max-width: 640px) { .diagram-box { white-space: normal; max-width: 100%; } }   /* long boxes must wrap on phones */
+        /* FOptInf: keep long titles clear of the slide number on phones */
+        @media (max-width: 640px) { .slide h2 { padding-right: 3.6rem; } }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="series-label">Fourier Optics for Inference &mdash; Presentation 01</div>
+    <h1><span class="accent">Fourier Optics</span> for Engineers</h1>
+    <p class="subtitle">How a lens computes a Fourier transform and a 4f system a convolution, in one pass of light; coherent and incoherent light, spatial light modulators, detectors and the phase problem, integrated-photonic alternatives; and the precision and energy bill: ENOB, noise, passes, and the converters around the optics.</p>
+
+    <div class="tags">
+        <span class="tag">4f system</span>
+        <span class="tag">Convolution theorem</span>
+        <span class="tag">SLMs</span>
+        <span class="tag">Phase problem</span>
+        <span class="tag">ENOB</span>
+        <span class="tag">Conversion energy</span>
+    </div>
+
+    <div class="pipeline">
+        <span class="pipeline-step">Input SLM</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Lens</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Fourier mask</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Lens</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Detector + ADC</span>
+    </div>
+</header>
+
+<section class="slide" id="slide-00">
+    <div class="slide-number">00</div>
+    <h2>Topics We'll Cover</h2>
+    <ul class="contents-list">
+        <li><a href="#slide-01">Why Fourier Optics, and Why Now</a></li>
+        <li><a href="#slide-02">The Lens as a Fourier Transformer</a></li>
+        <li><a href="#slide-03">The 4f System and the Convolution Theorem</a></li>
+        <li><a href="#slide-04">Interactive: FFT Convolution in 1-D and 2-D</a></li>
+        <li><a href="#slide-05">Coherent and Incoherent Light</a></li>
+        <li><a href="#slide-06">Spatial Light Modulators</a></li>
+        <li><a href="#slide-07">Detectors and the Phase Problem</a></li>
+        <li><a href="#slide-08">Integrated-Photonic Alternatives</a></li>
+        <li><a href="#slide-09">Precision: ENOB, Noise and Crosstalk</a></li>
+        <li><a href="#slide-10">Buying Precision: Passes and Planes</a></li>
+        <li><a href="#slide-11">Conversion Energy and Static Power</a></li>
+        <li><a href="#slide-12">What Optics Gives and What It Costs</a></li>
+        <li><a href="#slide-13">What to Take Away</a></li>
+    </ul>
+    <div class="concepts">
+        <p><strong>Concepts used here, and where they are explained.</strong> Each links to a glossary entry: this <a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#glossary">series glossary</a>, or the glossaries of LLM Inference Simulators, FHE Accelerator Simulators and the Simulation Engineering Toolkit for concepts those series already explain.</p>
+        <div class="chips"><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-optics" title="A lens Fourier-transforms the light field; two lenses with a mask between them multiply in the frequency domain, which is a convolution. The transform is free; the converters and lasers around it are not.">Fourier optics and the 4f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-lens" title="In coherent light, the field in a lens&#x27;s back focal plane is the 2-D Fourier transform of the field in its front focal plane; a point at distance x from the axis holds spatial frequency x/(λf). The transform is computed by propagation, in one pass, for every pixel at once.">The lens as a Fourier transformer</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-convthm" title="A convolution in one domain is a pointwise product in the other: F{h ∗ u} = F{h}·F{u}. A 4f system uses it optically (mask = filter spectrum); FFT convolution uses it digitally in O(n log n).">The convolution theorem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-longconv" title="A convolution whose filter is as long as the sequence, computed by FFT, pointwise multiply and inverse FFT in O(L log L) instead of O(L²). It is the token mixer of S4&#x27;s convolution mode, H3 and Hyena.">Long convolution by FFT</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-causalpad" title="An FFT computes a circular convolution, which wraps late inputs onto early outputs. Padding input and filter to at least 2L before the FFT makes it the linear, causal convolution a decoder needs.">Causal zero-padding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherence" title="Coherent light (a laser) adds complex field amplitudes, so signed and complex values interfere; incoherent light adds non-negative intensities. Coherent systems compute Fourier transforms of fields; incoherent ones are limited to non-negative quantities unless values are offset or split.">Coherent and incoherent light</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-slm" title="A pixelated device that writes values into a light field. Liquid-crystal SLMs modulate phase or amplitude and settle in tens of milliseconds; a 2-megapixel digital micromirror device switches amplitude at about 1 kHz with 8-bit depth (20 kHz binary). Pixel count and frame rate bound how fast inputs and Fourier-plane masks can change.">Spatial light modulator (SLM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-phaseproblem" title="Photodetectors measure intensity |E|², losing the sign and phase of the field. Remedies: interfere with a reference beam (coherent detection), add a bias so the field stays positive, split positive and negative parts into two passes, or recover phase iteratively (phase retrieval).">Square-law detection and the phase problem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzimesh" title="A triangular (Reck) or rectangular (Clements) grid of MZIs implements any N×N unitary, including the DFT, on a chip: N(N−1)/2 MZIs, each with a phase shifter that must be calibrated and held.">Mach&ndash;Zehnder interferometer (MZI) meshes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-onchipfft" title="On-chip alternatives to a free-space lens: diffractive or slab-lens structures, MZI meshes, and coupler and delay-line FFT circuits (used for all-optical OFDM). They are compact and fast but much smaller than a free-space 4f system.">Integrated optical Fourier transforms</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-enob" title="Effective number of bits: the real precision of an analogue chain. Rounding to the exact integer needs the error below one half, which sets a minimum ENOB for each block size and digit width.">ENOB and exact rounding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-floatenob" title="For float workloads the analogue chain must match the number format&#x27;s own rounding error, not be exact. Relative RMS error = crest × 2^−ENOB × 2/√12; matching BF16 needs about 10.3 ENOB, INT8 8.0, FP8 E4M3 6.3. FHE&#x27;s exact-rounding rule does not transfer to long convolutions.">The noise rule for floating-point workloads</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-crest" title="The ratio of a signal&#x27;s peak to its RMS value. An ADC&#x27;s full scale must cover the peak, so a high crest factor wastes resolution on the rare large values: the noise rule&#x27;s error scales with it.">Crest factor</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-averaging" title="Repeating an analogue operation k times and averaging cuts random noise by √k, buying ½ log2 k bits: one extra bit costs four times the passes. Digit planes, which make FHE exact, do not help a float workload.">Dynamic precision by repeated passes</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-digits" title="Splitting each operand into d digits of b bits so that low-precision analogue products can be recombined exactly in digital logic. Narrower digits need less precision but more passes.">Digit decomposition (bit slicing)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-walden" title="Converter energy per sample ≈ FoM × 2ENOB, so every extra bit of precision doubles the energy of each DAC or ADC conversion.">Walden figure of merit</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-conversion" title="Every value entering or leaving the optics costs a DAC or ADC sample, at Walden-FoM × 2^ENOB joules. With the series&#x27; illustrative FoMs a Hyena-style long convolution breaks even with a 1 pJ/FLOP digital FFT at about 12 ENOB.">Conversion-bound optics and the break-even ENOB</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-photonicpower" title="Optical operations are cheap, but lasers and thermal tuning burn static power, and every DAC/ADC conversion costs energy that grows with resolution. Gains need high reuse per conversion and a busy core.">Power in photonic compute</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-staticdyn" title="Static power (leakage, clocks, always-on logic) is paid whenever a chip is on; dynamic power αCV²f is paid for switching. Energy per operation scales with V², which is why lowering voltage pays quadratically.">Static and dynamic power</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-ntt" title="The FFT over a finite field Zq. It moves a limb between coefficient and evaluation form in (N/2) log N butterflies, so polynomial multiplication becomes element-wise. Every key switch and rescale runs NTTs.">Number-theoretic transform (NTT)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-bluestein" title="Rewrites a DFT as chirp multiplies around a convolution (using jk = (j² + k² − (k−j)²)/2), which lets a convolution engine compute an exact modular DFT.">Bluestein's algorithm</a></div>
+    </div>
+</section>
+
+<section class="slide" id="slide-01">
+    <div class="slide-number">01</div>
+    <h2>Why Fourier Optics, and Why Now</h2>
+    <p>A lens performs a two-dimensional Fourier transform on a light field as the light propagates through it. Every pixel of the transform is produced at once, by physics rather than by arithmetic, so the transform has no O(n log n) operation count, only the cost of getting data into and out of the light. That asymmetry is the whole story of this series.</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>What it offers</h4>
+            <ul>
+                <li><strong>Massive parallelism:</strong> a megapixel field is transformed in one pass.</li>
+                <li><strong>A free convolution:</strong> two lenses and a mask (the 4f system, <a href="#slide-03">slide 03</a>) multiply in the frequency domain.</li>
+                <li><strong>Low energy per operation</strong> inside the optics; the bill is paid at the edges (<a href="#slide-11">slide 11</a>).</li>
+            </ul>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>What it demands</h4>
+            <ul>
+                <li>A workload whose expensive part <em>is</em> a Fourier transform or a convolution. Deck 02 checks whether LLM inference has one.</li>
+                <li>Tolerance of <strong>analogue precision</strong> (<a href="#slide-09">slide 09</a>).</li>
+                <li>Enough reuse per conversion to amortise the DACs, ADCs, lasers and modulators.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="callout">
+        <div class="callout-label">A caution worth keeping</div>
+        <p>McMahon's review of optical computing argues that the speed of light is <em>not</em> what gives optics an advantage; any advantage comes from combining several of optics' features (parallelism, passive linear operations, low-loss data movement) while avoiding the pitfalls of conversion and precision (<a href="https://arxiv.org/abs/2308.00088">arXiv:2308.00088</a>). The sister series makes the same point about power (<a href="https://brendanjameslynskey.github.io/InfSim_07_Power_and_Energy/#slide-10">LLM Inference Simulators 07, &ldquo;Power in Photonic and Novel Compute&rdquo;</a>).</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-02">
+    <div class="slide-number">02</div>
+    <h2>The Lens as a Fourier Transformer</h2>
+    <p>Place a transparency with field U<sub>0</sub>(x, y) in the front focal plane of a thin lens of focal length f, and illuminate it with a coherent plane wave of wavelength &lambda;. In the back focal plane the field is, in the paraxial (Fresnel) approximation:</p>
+    <div class="callout">
+        <p style="text-align:center; font-family: var(--font-mono);">U<sub>f</sub>(u, v) = <sup>1</sup>&frasl;<sub>i&lambda;f</sub> &#8748; U<sub>0</sub>(x, y) &middot; exp[&minus;i 2&pi; (xu + yv) / (&lambda;f)] dx dy</p>
+    </div>
+    <ul>
+        <li><strong>A Fourier transform, evaluated at spatial frequency</strong> (f<sub>x</sub>, f<sub>y</sub>) = (u, v) / (&lambda;f). A detector pixel at distance u from the axis reads the input's component at frequency u/(&lambda;f): longer focal lengths spread the spectrum out.</li>
+        <li><strong>Front focal plane matters.</strong> With the input elsewhere, the transform picks up a quadratic phase factor; intensity measurements do not see it, but a following stage that uses the phase does.</li>
+        <li><strong>Resolution is finite.</strong> The lens aperture and the pixel pitch of the devices at each plane bound the number of resolvable points (the space&ndash;bandwidth product), which plays the role of the FFT length.</li>
+        <li><strong>It is 2-D by nature.</strong> A cylindrical lens transforms along one axis only, so one device can compute many independent 1-D transforms, one per row, in parallel. That is the form a sequence model's per-channel convolutions would take (deck 02).</li>
+    </ul>
+    <p style="font-size:0.85rem;">The relation is the standard result of scalar diffraction theory, derived in any Fourier-optics text; the review by Wetzstein et al. puts it in the context of optical inference (<a href="https://doi.org/10.1038/s41586-020-2973-6">Nature 588, 2020</a>).</p>
+</section>
+
+<section class="slide" id="slide-03">
+    <div class="slide-number">03</div>
+    <h2>The 4f System and the Convolution Theorem</h2>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 230" width="760" height="230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A 4f system: input plane, lens 1, Fourier plane with mask, lens 2, output plane, each a focal length f apart">
+            <style>
+                .ln { fill: rgba(151,205,198,0.15); stroke: #97cdc6; }
+                .pl { stroke: #e3b174; stroke-width: 3; }
+                .mk { stroke: #de805a; stroke-width: 5; stroke-dasharray: 6 4; }
+                .r  { stroke: #a2978b; stroke-width: 0.9; fill: none; }
+                .ax { stroke: #3a322b; stroke-width: 1; stroke-dasharray: 3 3; }
+                .t  { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d  { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .m  { fill: #aabd59; font-family: 'Geist Mono', monospace; font-size: 11px; }
+            </style>
+            <line x1="30" y1="100" x2="730" y2="100" class="ax"/>
+            <line x1="60" y1="45" x2="60" y2="155" class="pl"/>
+            <ellipse cx="220" cy="100" rx="13" ry="62" class="ln"/>
+            <line x1="380" y1="45" x2="380" y2="155" class="mk"/>
+            <ellipse cx="540" cy="100" rx="13" ry="62" class="ln"/>
+            <line x1="700" y1="45" x2="700" y2="155" class="pl"/>
+            <path class="r" d="M60 60 L220 60 L380 100 L540 140 L700 140"/>
+            <path class="r" d="M60 140 L220 140 L380 100 L540 60 L700 60"/>
+            <path class="r" d="M60 80 L220 80 L380 100"/><path class="r" d="M60 120 L220 120 L380 100"/>
+            <line x1="60" y1="28" x2="220" y2="28" class="r"/><text x="134" y="24" class="d">f</text>
+            <line x1="220" y1="28" x2="380" y2="28" class="r"/><text x="294" y="24" class="d">f</text>
+            <line x1="380" y1="28" x2="540" y2="28" class="r"/><text x="454" y="24" class="d">f</text>
+            <line x1="540" y1="28" x2="700" y2="28" class="r"/><text x="614" y="24" class="d">f</text>
+            <text x="20" y="176" class="t">input u(x)</text><text x="20" y="191" class="d">SLM or modulators</text>
+            <text x="200" y="176" class="t">lens 1</text><text x="190" y="191" class="d">F{u}</text>
+            <text x="338" y="176" class="t">Fourier plane</text><text x="330" y="191" class="d">mask H = F{h}</text>
+            <text x="520" y="176" class="t">lens 2</text><text x="500" y="191" class="d">F{H&middot;F{u}}</text>
+            <text x="650" y="176" class="t">output</text><text x="630" y="191" class="d">detector + ADC</text>
+            <text x="150" y="218" class="m">result at the output plane: (h &lowast; u)(&minus;x), a convolution, mirrored</text>
+        </svg>
+    </div>
+    <ul>
+        <li><strong>The convolution theorem:</strong> F{h &lowast; u} = F{h} &middot; F{u}. Lens 1 transforms the input, the mask multiplies it by the filter's spectrum H, and lens 2 transforms again. A second forward transform returns the result with coordinates mirrored, which is a relabelling, not a cost.</li>
+        <li><strong>Correlation is the same machine</strong> with the conjugate spectrum on the mask: the classical optical correlator, used for pattern matching.</li>
+        <li><strong>The mask holds the weights.</strong> Every different filter needs a different mask, so how fast and how large the mask can be rewritten matters as much as the transform (<a href="#slide-06">slide 06</a>; deck 02 counts the rewrites for a sequence model).</li>
+        <li><strong>Digital equivalent:</strong> FFT, pointwise multiply, inverse FFT, in O(n log n). An FFT computes a <em>circular</em> convolution; a causal, linear one needs zero-padding to at least twice the length, as the next slide shows.</li>
+    </ul>
+    <p style="font-size:0.85rem;">Learned 4f layers have been demonstrated for image classification, with an optimised diffractive element as the mask (Chang et al., <a href="https://doi.org/10.1038/s41598-018-30619-y">Sci. Rep. 8, 2018</a>), and an amplitude-only Fourier-plane processor runs convolutions on about 1,000&times;1,000 matrices (Miscuglio et al., <a href="https://arxiv.org/abs/2008.05853">arXiv:2008.05853</a>; Optica 2020).</p>
+</section>
+
+<section class="slide" id="slide-04">
+    <div class="slide-number">04</div>
+    <h2>Interactive: FFT Convolution in 1-D and 2-D</h2>
+    <p>The digital twin of a 4f system: transform, multiply by the filter's spectrum, transform back. Compare it with a direct convolution, turn padding off to see the circular wrap, and add an ADC of a chosen ENOB at the output (noise of rms q/&radic;12 with q = 2&middot;peak/2<sup>ENOB</sup>, the definition of ENOB) to see the analogue error against the rule of <a href="#slide-09">slide 09</a>.</p>
+    <div class="control-panel">
+        <div class="sim-grid">
+            <div class="control-row"><label for="fc-dim">Dimensions</label><select id="fc-dim"><option value="1" selected>1-D: a sequence of 1,024</option><option value="2">2-D: a 64&times;64 image</option></select></div>
+            <div class="control-row"><label for="fc-in">Input</label><select id="fc-in"></select></div>
+            <div class="control-row"><label for="fc-k">Filter</label><select id="fc-k"></select></div>
+            <div class="control-row"><label for="fc-pad">FFT size</label><select id="fc-pad"><option value="1" selected>zero-padded (linear, causal)</option><option value="0">unpadded (circular)</option></select></div>
+            <div class="control-row"><label for="fc-enob">Output ADC ENOB</label><input type="range" id="fc-enob" min="3" max="17" value="17"><span class="val" id="fc-enob-val">ideal</span></div>
+        </div>
+        <div class="metric-grid">
+            <div class="metric"><div class="metric-label">FFT vs direct: max error / peak</div><div class="metric-value" id="fc-err">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Future leak (1-D)</div><div class="metric-value" id="fc-leak">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">ADC error (relative RMS)</div><div class="metric-value" id="fc-adc">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Rule: crest &times; 2<sup>&minus;ENOB</sup> &times; 2/&radic;12</div><div class="metric-value" id="fc-rule">&mdash;</div></div>
+        </div>
+        <div class="canvas-wrap" id="fc-wrap1" style="padding:0.4rem;"><canvas id="fc-canvas" width="840" height="260"></canvas></div>
+        <div class="canvas-wrap" id="fc-wrap2" style="padding:0.4rem; display:none;">
+            <div style="display:flex; flex-wrap:wrap; gap:0.8rem; justify-content:center;">
+                <figure style="margin:0; text-align:center;"><canvas id="fc-i0" width="128" height="128"></canvas><figcaption class="fc-cap">input</figcaption></figure>
+                <figure style="margin:0; text-align:center;"><canvas id="fc-i1" width="128" height="128"></canvas><figcaption class="fc-cap">log |input spectrum|</figcaption></figure>
+                <figure style="margin:0; text-align:center;"><canvas id="fc-i2" width="128" height="128"></canvas><figcaption class="fc-cap">output</figcaption></figure>
+            </div>
+        </div>
+        <p id="fc-note" style="font-size:0.85rem; margin-top:0.4rem;"></p>
+    </div>
+    <style>.fc-cap { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); }</style>
+    <script>
+    (function(){
+        const $ = id => document.getElementById(id);
+        function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+        function gauss(r) { return Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r()); }
+        // in-place iterative radix-2 complex FFT (re, im: Float64Array of length 2^k)
+        function fft(re, im, inv) {
+            const n = re.length;
+            for (let i = 1, j = 0; i < n; i++) {
+                let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit;
+                if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; }
+            }
+            for (let len = 2; len <= n; len <<= 1) {
+                const a = (inv ? 2 : -2) * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
+                for (let i = 0; i < n; i += len) {
+                    let cr = 1, ci = 0;
+                    for (let k = 0; k < len / 2; k++) {
+                        const ur = re[i + k], ui = im[i + k];
+                        const vr = re[i + k + len / 2] * cr - im[i + k + len / 2] * ci, vi = re[i + k + len / 2] * ci + im[i + k + len / 2] * cr;
+                        re[i + k] = ur + vr; im[i + k] = ui + vi; re[i + k + len / 2] = ur - vr; im[i + k + len / 2] = ui - vi;
+                        const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr;
+                    }
+                }
+            }
+            if (inv) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+        }
+        // ── 1-D ──
+        const N = 1024;
+        const IN1 = { spikes: 'four impulses', tokens: 'random tokens', step: 'a step at 3/4' };
+        const K1 = { exp: 'exponential, τ 60', long: 'long random, τ 200', box: 'moving average, 32' };
+        function input1(kind) {
+            const r = rng(7), u = new Float64Array(N);
+            for (let i = 0; i < N; i++) u[i] = kind === 'tokens' ? gauss(r) : kind === 'step' ? (i >= 768 ? 1 : 0) : 0;
+            if (kind === 'spikes') [40, 300, 520, 900].forEach((p, k) => u[p] = k % 2 ? -1 : 1);
+            return u;
+        }
+        function filter1(kind) {
+            const r = rng(11), h = new Float64Array(N);
+            for (let i = 0; i < N; i++) h[i] = kind === 'long' ? gauss(r) * Math.exp(-i / 200) / 6 : kind === 'exp' ? Math.exp(-i / 60) / 60 : (i < 32 ? 1 / 32 : 0);
+            return h;
+        }
+        function direct1(u, h) {
+            const y = new Float64Array(N);
+            for (let t = 0; t < N; t++) { let s = 0; for (let j = 0; j <= t; j++) s += h[t - j] * u[j]; y[t] = s; }
+            return y;
+        }
+        function fftconv1(u, h, pad) {
+            const n = pad ? 2 * N : N;
+            const ar = new Float64Array(n), ai = new Float64Array(n), br = new Float64Array(n), bi = new Float64Array(n);
+            ar.set(u); br.set(h); fft(ar, ai, false); fft(br, bi, false);
+            for (let k = 0; k < n; k++) { const r = ar[k] * br[k] - ai[k] * bi[k]; ai[k] = ar[k] * bi[k] + ai[k] * br[k]; ar[k] = r; }
+            fft(ar, ai, true);
+            return ar.slice(0, N);
+        }
+        function adc(y, enob, seed) {
+            let peak = 0; for (const v of y) peak = Math.max(peak, Math.abs(v));
+            const q = 2 * peak / 2 ** enob, r = rng(seed), out = new Float64Array(y.length);
+            for (let i = 0; i < y.length; i++) out[i] = y[i] + gauss(r) * q / Math.sqrt(12);
+            return out;
+        }
+        function stats(meas, ref) {
+            let num = 0, den = 0, peak = 0;
+            for (let i = 0; i < ref.length; i++) { num += (meas[i] - ref[i]) ** 2; den += ref[i] ** 2; peak = Math.max(peak, Math.abs(ref[i])); }
+            return { rel: Math.sqrt(num / den), crest: peak / Math.sqrt(den / ref.length) };
+        }
+        // ── 2-D ──
+        const M = 64;
+        const IN2 = { shapes: 'square, ring, bars', noise: 'random pixels' };
+        const K2 = { blur: 'blur, σ 3', wide: 'wide blur, σ 8', edge: 'edges (Laplacian)' };
+        function input2(kind) {
+            const a = new Float64Array(M * M), r = rng(5);
+            for (let y = 0; y < M; y++) for (let x = 0; x < M; x++) {
+                let v = 0;
+                if (kind === 'noise') v = r();
+                else {
+                    if (x >= 6 && x < 22 && y >= 8 && y < 24) v = 1;
+                    const d = Math.hypot(x - 44, y - 18); if (d > 7 && d < 11) v = 1;
+                    if (Math.abs(x - y + 6) < 2 && y > 34 && y < 60) v = 1;
+                    if (x >= 54 && y >= 40 && y < 62) v = 1;          // touches the right edge: watch the wrap
+                }
+                a[y * M + x] = v;
+            }
+            return a;
+        }
+        function kernel2(kind) {           // centred kernel, stored with wrap-around indexing (offsets mod n)
+            const taps = [];
+            if (kind === 'edge') taps.push([0, 0, -4], [1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1]);
+            else {
+                const s = kind === 'wide' ? 8 : 3, R = Math.ceil(3 * s); let z = 0;
+                for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const w = Math.exp(-(dx * dx + dy * dy) / (2 * s * s)); taps.push([dx, dy, w]); z += w; }
+                taps.forEach(t => t[2] /= z);
+            }
+            return taps;
+        }
+        function direct2(a, taps) {      // linear convolution with zero boundary
+            const out = new Float64Array(M * M);
+            for (let y = 0; y < M; y++) for (let x = 0; x < M; x++) {
+                let s = 0;
+                for (const [dx, dy, w] of taps) { const xx = x - dx, yy = y - dy; if (xx >= 0 && xx < M && yy >= 0 && yy < M) s += w * a[yy * M + xx]; }
+                out[y * M + x] = s;
+            }
+            return out;
+        }
+        function fft2(re, im, n, inv) {
+            const rr = new Float64Array(n), ri = new Float64Array(n);
+            for (let y = 0; y < n; y++) { rr.set(re.subarray(y * n, y * n + n)); ri.set(im.subarray(y * n, y * n + n)); fft(rr, ri, inv); re.set(rr, y * n); im.set(ri, y * n); }
+            for (let x = 0; x < n; x++) {
+                for (let y = 0; y < n; y++) { rr[y] = re[y * n + x]; ri[y] = im[y * n + x]; }
+                fft(rr, ri, inv);
+                for (let y = 0; y < n; y++) { re[y * n + x] = rr[y]; im[y * n + x] = ri[y]; }
+            }
+        }
+        function fftconv2(a, taps, pad) {
+            const n = pad ? 2 * M : M;
+            const ar = new Float64Array(n * n), ai = new Float64Array(n * n), kr = new Float64Array(n * n), ki = new Float64Array(n * n);
+            for (let y = 0; y < M; y++) for (let x = 0; x < M; x++) ar[y * n + x] = a[y * M + x];
+            for (const [dx, dy, w] of taps) kr[((dy + n) % n) * n + ((dx + n) % n)] += w;
+            fft2(ar, ai, n, false); fft2(kr, ki, n, false);
+            const spec = new Float64Array(n * n);
+            for (let i = 0; i < n * n; i++) { spec[i] = Math.hypot(ar[i], ai[i]); const r = ar[i] * kr[i] - ai[i] * ki[i]; ai[i] = ar[i] * ki[i] + ai[i] * kr[i]; ar[i] = r; }
+            fft2(ar, ai, n, true);
+            const out = new Float64Array(M * M);
+            for (let y = 0; y < M; y++) for (let x = 0; x < M; x++) out[y * M + x] = ar[y * n + x];
+            return { out, spec, n };
+        }
+        // ── drawing ──
+        function plot1(u, ref, meas) {
+            const cv = $('fc-canvas'), g = cv.getContext('2d'), W = cv.width, H = cv.height;
+            g.clearRect(0, 0, W, H); g.font = '11px "Geist Mono", monospace';
+            let lo = Infinity, hi = -Infinity;
+            for (const s of [ref, meas]) for (const v of s) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+            const pad = (hi - lo) * 0.08 || 1; lo -= pad; hi += pad;
+            const X = i => 60 + i / (N - 1) * (W - 80), Y = v => H - 30 - (v - lo) / (hi - lo) * (H - 50);
+            g.strokeStyle = '#3a322b'; g.strokeRect(60, 20, W - 80, H - 50);
+            g.fillStyle = '#a2978b'; g.fillText('position in the sequence →', W / 2 - 80, H - 3);
+            [0, 256, 512, 768, 1023].forEach(i => g.fillText(String(i), X(i) - 10, H - 18));
+            [lo + pad, hi - pad].forEach(v => g.fillText(v.toFixed(2), 6, Y(v) + 4));
+            const line = (s, col, w, dash) => { g.strokeStyle = col; g.lineWidth = w; g.setLineDash(dash); g.beginPath();
+                s.forEach((v, i) => i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v))); g.stroke(); g.setLineDash([]); g.lineWidth = 1; };
+            line(ref, '#aabd59', 2.2, []); line(meas, '#de805a', 1.2, [4, 3]);
+            g.fillStyle = 'rgb(29,25,22)'; g.fillRect(W - 330, 26, 262, 40); g.strokeStyle = '#3a322b'; g.strokeRect(W - 330, 26, 262, 40);
+            g.fillStyle = '#aabd59'; g.fillText('━ direct causal convolution', W - 320, 42);
+            g.fillStyle = '#de805a'; g.fillText('┅ FFT / optical result', W - 320, 58);
+        }
+        function img(id, data, n, w, sym) {
+            const cv = $(id), g = cv.getContext('2d'), im = g.createImageData(128, 128);
+            let lo = Infinity, hi = -Infinity; for (let y = 0; y < w; y++) for (let x = 0; x < w; x++) { const v = data[y * n + x]; lo = Math.min(lo, v); hi = Math.max(hi, v); }
+            if (sym) { const m = Math.max(Math.abs(lo), Math.abs(hi)); lo = -m; hi = m; }
+            for (let y = 0; y < 128; y++) for (let x = 0; x < 128; x++) {
+                const v = (data[Math.floor(y * w / 128) * n + Math.floor(x * w / 128)] - lo) / ((hi - lo) || 1), k = (y * 128 + x) * 4;
+                im.data[k] = 29 + v * (227 - 29); im.data[k + 1] = 25 + v * (177 - 25); im.data[k + 2] = 22 + v * (116 - 22); im.data[k + 3] = 255;
+            }
+            g.putImageData(im, 0, 0);
+        }
+        function fill(sel, opts) { const v = sel.value; sel.innerHTML = Object.entries(opts).map(([k, t]) => `<option value="${k}">${t}</option>`).join(''); if (opts[v]) sel.value = v; }
+        function sci(x) { return x === 0 ? '0' : x.toExponential(1); }
+        function rec() {
+            const two = $('fc-dim').value === '2';
+            fill($('fc-in'), two ? IN2 : IN1); fill($('fc-k'), two ? K2 : K1);
+            $('fc-wrap1').style.display = two ? 'none' : ''; $('fc-wrap2').style.display = two ? '' : 'none';
+            const pad = $('fc-pad').value === '1', E = +$('fc-enob').value, ideal = E >= 17;
+            $('fc-enob-val').textContent = ideal ? 'ideal' : String(E);
+            let ref, fftOut, leak = null;
+            if (!two) {
+                const u = input1($('fc-in').value), h = filter1($('fc-k').value);
+                ref = direct1(u, h); fftOut = fftconv1(u, h, pad);
+                const u2 = u.slice(); u2[N - 1] += 1; const y2 = fftconv1(u2, h, pad);
+                leak = 0; for (let i = 0; i < N - 1; i++) leak = Math.max(leak, Math.abs(y2[i] - fftOut[i]));
+            } else {
+                const a = input2($('fc-in').value), taps = kernel2($('fc-k').value);
+                ref = direct2(a, taps); const r = fftconv2(a, taps, pad); fftOut = r.out;
+                const ls = new Float64Array(r.n * r.n); for (let i = 0; i < ls.length; i++) ls[i] = Math.log(1e-6 + r.spec[(i + (r.n >> 1) * r.n + (r.n >> 1)) % (r.n * r.n)]);
+                img('fc-i0', a, M, M, false); img('fc-i1', ls, r.n, r.n, false);
+            }
+            let peak = 0, err = 0; for (let i = 0; i < ref.length; i++) { peak = Math.max(peak, Math.abs(ref[i])); err = Math.max(err, Math.abs(fftOut[i] - ref[i])); }
+            const meas = ideal ? fftOut : adc(fftOut, E, 99);
+            const st = stats(meas, ref);
+            $('fc-err').textContent = sci(err / peak);
+            $('fc-leak').textContent = leak === null ? 'n/a' : sci(leak);
+            $('fc-adc').textContent = ideal ? 'off' : sci(st.rel);
+            $('fc-rule').textContent = ideal ? 'off' : sci(st.crest * 2 ** -E * 2 / Math.sqrt(12));
+            if (!two) plot1(null, ref, meas); else img('fc-i2', meas, M, M, $('fc-k').value === 'edge');
+            $('fc-note').innerHTML = two
+                ? (pad ? 'Zero-padded to twice the size in each direction: the FFT result equals the direct (linear) convolution to rounding.'
+                       : 'Unpadded: the FFT computes a <strong>circular</strong> convolution, so the blur wraps from each edge onto the opposite one (look at the corners).')
+                : (pad ? 'Zero-padded to twice the length: the FFT result equals the direct causal convolution to rounding, and changing the last input moves no earlier output.'
+                       : 'Unpadded: the FFT computes a <strong>circular</strong> convolution, so late inputs wrap onto early outputs: a causality violation, since the last token changes the first outputs.');
+            window.fcState = { err: err / peak, leak, rel: ideal ? null : st.rel, rule: ideal ? null : st.crest * 2 ** -E * 2 / Math.sqrt(12) };
+        }
+        ['fc-dim', 'fc-in', 'fc-k', 'fc-pad', 'fc-enob'].forEach(id => $(id).addEventListener('input', rec));
+        window.fcDemo = { set(o) { for (const [k, v] of Object.entries(o)) { $(k).value = v; if (k === 'fc-dim') rec(); } rec(); return window.fcState; } };
+        rec();
+    })();
+    </script>
+    <p style="font-size:0.85rem;">The same checks, in NumPy, are in <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/flop_share.py">analysis/flop_share.py</a>: padded FFT convolution against direct, 5.6e-16 of the peak; unpadded, 0.72.</p>
+</section>
+
+<section class="slide" id="slide-05">
+    <div class="slide-number">05</div>
+    <h2>Coherent and Incoherent Light</h2>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Coherent (a laser)</h4>
+            <ul>
+                <li>Fields add as <strong>complex amplitudes</strong>: two beams can cancel. Values can be signed or complex, encoded in amplitude and phase.</li>
+                <li>The lens transforms the <em>field</em>, so the 4f system computes a true complex convolution.</li>
+                <li>Costs: a stable laser, phase-accurate modulators, alignment, and speckle and coherent noise from every stray reflection.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Incoherent (LEDs, broadband light)</h4>
+            <ul>
+                <li><strong>Intensities add</strong>, and intensities are never negative.</li>
+                <li>An incoherent system convolves intensity with the intensity point-spread function: a real, non-negative kernel only.</li>
+                <li>Signed values need a bias or a split into positive and negative parts, each costing dynamic range or a second pass.</li>
+            </ul>
+        </div>
+    </div>
+    <ul>
+        <li><strong>Amplitude-only processing</strong> is a middle way: Miscuglio et al. modulate only amplitude in both planes and report robustness to coherence noise, with orders-of-magnitude lower delay than liquid-crystal phase devices (<a href="https://arxiv.org/abs/2008.05853">arXiv:2008.05853</a>).</li>
+        <li><strong>For inference,</strong> activations and filters are signed, so either the system is coherent and the detector recovers sign (<a href="#slide-07">slide 07</a>), or every signed product is paid for twice. The simulator design for deck 03 makes this a parameter.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-06">
+    <div class="slide-number">06</div>
+    <h2>Spatial Light Modulators</h2>
+    <p>Data enters a free-space system through a <strong>spatial light modulator</strong> (SLM): a pixel array that writes amplitude or phase into the beam. One sits at the input plane; another can hold the Fourier-plane mask.</p>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Device</th><th>Writes</th><th>Update rate</th><th>Notes</th></tr>
+        <tr><td>Liquid-crystal SLM (e.g. LCoS)</td><td>Phase (or amplitude), many grey levels</td><td>Settles in tens of milliseconds (&ldquo;tens of Hz&rdquo; in Miscuglio et al.'s comparison)</td><td>High pixel counts; the usual choice for phase masks</td></tr>
+        <tr><td>Digital micromirror device (DMD)</td><td>Amplitude (on/off mirrors; grey levels by time-multiplexing)</td><td>2 million mirrors at 1,031 Hz with 8-bit depth, about 20 kHz binary, in Miscuglio et al.'s processor</td><td>At least two orders of magnitude faster than liquid crystal at the same resolution, per the same paper</td></tr>
+        <tr><td>Integrated modulators (on chip)</td><td>Amplitude or phase per waveguide</td><td>GHz: Feldmann et al. report operation above 14 GHz, limited by modulators and detectors</td><td>Demonstrations have few channels, not millions of pixels</td></tr>
+    </table>
+    </div>
+    <ul>
+        <li><strong>The trade:</strong> free-space SLMs have millions of pixels but kHz-or-slower updates; integrated modulators run at GHz but have few channels. Throughput is pixels &times; rate either way, and the converters behind every pixel set the energy.</li>
+        <li><strong>The mask is a weight store.</strong> A filter that changes every pass is limited by the mask's update rate; a filter held for many passes (a weight, reused across a batch) is nearly free. Deck 02 turns this into a count of mask rewrites per forward pass.</li>
+        <li>Rates and pixel counts move quickly with products; treat these as orders of magnitude and check the device datasheet. Sources: Miscuglio et al. (<a href="https://arxiv.org/abs/2008.05853">arXiv:2008.05853</a>), Feldmann et al. (<a href="https://arxiv.org/abs/2002.00281">arXiv:2002.00281</a>; <a href="https://doi.org/10.1038/s41586-020-03070-1">Nature 589, 2021</a>).</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-07">
+    <div class="slide-number">07</div>
+    <h2>Detectors and the Phase Problem</h2>
+    <p>Photodetectors are <strong>square-law</strong>: they measure intensity |E|<sup>2</sup>, not the field E. A coherent 4f system computes a signed or complex field, and the detector throws away its sign and phase. Four remedies:</p>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Remedy</th><th>How</th><th>Cost</th></tr>
+        <tr><td><strong>Coherent (homodyne) detection</strong></td><td>Interfere the output with a reference beam; the cross term is linear in E</td><td>A phase-stable reference, extra optics or balanced detectors</td></tr>
+        <tr><td><strong>Bias</strong></td><td>Add a constant so the field stays positive, take &radic;intensity, subtract</td><td>Dynamic range: the bias uses ADC codes</td></tr>
+        <tr><td><strong>Split passes</strong></td><td>Run positive and negative parts separately and subtract digitally</td><td>Twice the passes and conversions</td></tr>
+        <tr><td><strong>Phase retrieval</strong></td><td>Recover phase from intensity-only measurements iteratively</td><td>Many iterations; not exact in general</td></tr>
+    </table>
+    </div>
+    <ul>
+        <li><strong>Direct phase determination:</strong> Macfaden, Gordon and Wilkinson decompose the input and use symmetries of the Fourier transform to determine phase directly from intensity measurements, giving an optical complex-to-complex DFT (<a href="https://doi.org/10.1038/s41598-017-13733-1">Sci. Rep. 7, 2017</a>).</li>
+        <li><strong>Homodyne detection in optical neural networks:</strong> Hamerly et al. encode both inputs and weights optically and multiply them by interfering the two at the detectors (photoelectric multiplication, <a href="https://arxiv.org/abs/1812.07614">arXiv:1812.07614</a>; <a href="https://doi.org/10.1103/PhysRevX.9.021032">Phys. Rev. X 9, 2019</a>).</li>
+        <li><strong>Phase retrieval algorithms</strong> are compared in Fienup's classic paper (<a href="https://doi.org/10.1364/AO.21.002758">Appl. Opt. 21, 1982</a>).</li>
+        <li>The deck 03 design charges intensity detection as twice the passes, and coherent detection as one ADC sample per real output.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-08">
+    <div class="slide-number">08</div>
+    <h2>Integrated-Photonic Alternatives</h2>
+    <p>A free-space 4f system is large and slow to reconfigure. On a chip there are three ways to compute a Fourier transform or a linear transform:</p>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Approach</th><th>What it computes</th><th>Scale and limits</th><th>Example</th></tr>
+        <tr><td><strong>MZI meshes</strong></td><td>Any N&times;N unitary, the DFT included, as a grid of Mach&ndash;Zehnder interferometers</td><td>N(N&minus;1)/2 MZIs, each with a calibrated phase shifter; loss and error grow with N</td><td>Reck et al. (<a href="https://doi.org/10.1103/PhysRevLett.73.58">PRL 1994</a>); Clements et al. (<a href="https://arxiv.org/abs/1603.08788">arXiv:1603.08788</a>); Shen et al.'s coherent nanophotonic network (<a href="https://arxiv.org/abs/1610.02365">arXiv:1610.02365</a>)</td></tr>
+        <tr><td><strong>On-chip diffraction</strong></td><td>Diffractive layers in a silicon slab: a passive, learned linear transform (an on-chip lens is the Fourier special case)</td><td>Passive and compact (0.15&ndash;0.3 mm<sup>2</sup> footprints in the example); fixed once fabricated</td><td>Fu et al. (<a href="https://doi.org/10.1038/s41467-022-35772-7">Nat. Commun. 14, 2023</a>)</td></tr>
+        <tr><td><strong>Coupler and delay FFT circuits</strong></td><td>The FFT butterfly network built from couplers and delay lines</td><td>Fixed transform at very high line rate, used for optical OFDM</td><td>Hillerkuss et al., 26 Tbit/s with an all-optical FFT (<a href="https://doi.org/10.1038/nphoton.2011.74">Nat. Photon. 5, 2011</a>)</td></tr>
+    </table>
+    </div>
+    <ul>
+        <li><strong>Photonic tensor cores</strong> perform matrix-vector products rather than transforms: Feldmann et al. (phase-change memory and frequency combs, <a href="https://doi.org/10.1038/s41586-020-03070-1">Nature 589, 2021</a>) and Xu et al. (11 TOPS, <a href="https://doi.org/10.1038/s41586-020-03063-0">Nature 589, 2021</a>). Those are optical MACs, the other branch deck 02 distinguishes.</li>
+        <li>An on-chip FFT has the converter bill of a free-space one without its millions of parallel pixels; its advantage is speed of reconfiguration and integration.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-09">
+    <div class="slide-number">09</div>
+    <h2>Precision: ENOB, Noise and Crosstalk</h2>
+    <p>The <strong>effective number of bits</strong> (ENOB) of an analogue chain is defined from its signal-to-noise-and-distortion ratio, SINAD = 6.02&middot;ENOB + 1.76 dB for a full-scale sine (Walden's ADC survey, <a href="https://doi.org/10.1109/49.761034">IEEE JSAC 1999</a>). It lumps every error source into one number: shot and thermal noise, laser intensity noise, crosstalk between pixels, aberrations, modulator non-linearity, and the converters' own quantisation.</p>
+    <p><strong>For floating-point workloads the requirement is a noise level, not exactness.</strong> With the ADC's full scale set to the output's peak, the relative RMS error is crest &times; 2<sup>&minus;ENOB</sup> &times; 2/&radic;12, where the crest factor is the output's peak-to-RMS ratio. Measured on a causal FFT convolution:</p>
+    <div class="table-wrap"><table>
+<thead><tr><th>Length</th><th>Crest</th><th>ENOB 4</th><th>ENOB 6</th><th>ENOB 8</th><th>ENOB 10</th><th>ENOB 12</th><th>ENOB 14</th><th>Rule at ENOB 8</th></tr></thead>
+<tbody>
+<tr><td>256</td><td>2.97</td><td>1.1e-01</td><td>2.7e-02</td><td>6.7e-03</td><td>1.4e-03</td><td>4.1e-04</td><td>1.0e-04</td><td>6.7e-03</td></tr>
+<tr><td>4,096</td><td>3.64</td><td>1.3e-01</td><td>3.3e-02</td><td>8.3e-03</td><td>2.1e-03</td><td>5.1e-04</td><td>1.3e-04</td><td>8.2e-03</td></tr>
+<tr><td>65,536</td><td>4.43</td><td>1.6e-01</td><td>4.0e-02</td><td>1.0e-02</td><td>2.5e-03</td><td>6.2e-04</td><td>1.6e-04</td><td>1.0e-02</td></tr>
+</tbody></table></div>
+    <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;6. Analogue precision&rdquo;</p>
+    <ul>
+        <li>The rule predicts the measurement (last column against the ENOB 8 column). Longer convolutions have a higher crest factor, so they need slightly more bits for the same error.</li>
+        <li><strong>FHE needs exactness, which is much harder</strong> (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-03">FHESim 04, route 1</a>). Exact rounding, by FHESim 04's rule 2^(ENOB-1) &gt; d n (2^b - 1)^2 with 8-bit inputs and filters in 1-bit digits (d = 8, the most forgiving split; n = products summed per output), needs ENOB 9 for L = 16; ENOB 17 for L = 4,096; ENOB 21 for L = 65,536: feasible for FHE's 16-point blocks, not for sequence-length convolutions, so float workloads use the noise rule above instead.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-10">
+    <div class="slide-number">10</div>
+    <h2>Buying Precision: Passes and Planes</h2>
+    <p>How many bits does inference need, and how do you buy more than the hardware has? The format's own rounding error sets the target (same metric, length 4,096):</p>
+    <div class="table-wrap"><table>
+<thead><tr><th>Format</th><th>Rounding error (relative RMS)</th><th>ENOB to match</th><th>Averaged passes at ENOB 8</th></tr></thead>
+<tbody>
+<tr><td>BF16</td><td>1.6e-03</td><td>10.3</td><td>26</td></tr>
+<tr><td>FP8 E4M3</td><td>2.6e-02</td><td>6.3</td><td>1</td></tr>
+<tr><td>INT8</td><td>8.3e-03</td><td>8.0</td><td>1</td></tr>
+</tbody></table></div>
+    <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;6. Analogue precision&rdquo;</p>
+    <p>Two ways to buy precision at ENOB 8:</p>
+    <div class="table-wrap"><table>
+<thead><tr><th>Length</th><th>1 pass</th><th>4 passes averaged</th><th>16 passes averaged</th><th>2 digit planes of 8 bits</th></tr></thead>
+<tbody>
+<tr><td>256</td><td>6.7e-03</td><td>3.3e-03</td><td>1.5e-03</td><td>6.7e-03</td></tr>
+<tr><td>4,096</td><td>8.3e-03</td><td>4.2e-03</td><td>2.1e-03</td><td>8.1e-03</td></tr>
+<tr><td>65,536</td><td>1.0e-02</td><td>5.0e-03</td><td>2.5e-03</td><td>9.9e-03</td></tr>
+</tbody></table></div>
+    <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;6. Analogue precision&rdquo;</p>
+    <ul>
+        <li><strong>Averaging works, expensively:</strong> k passes cut random noise by &radic;k, so each extra bit costs 4&times; the passes (Garg et al., <a href="https://arxiv.org/abs/2102.06365">arXiv:2102.06365</a>, who choose precision per layer). Reaching BF16's error from ENOB 8 takes 26 passes (first table, last column).</li>
+        <li><strong>Digit planes do not help floats.</strong> They make FHE's integer arithmetic exact by shrinking each plane's values (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-03">FHESim 04, route 1</a>), but for a float workload the top plane carries nearly all of the signal and is read at the same ENOB relative to its own peak.</li>
+        <li><strong>FP8 and INT8 inference</strong> sit within reach of an 8-bit analogue chain; BF16 does not.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-11">
+    <div class="slide-number">11</div>
+    <h2>Conversion Energy and Static Power</h2>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Every value in and out costs a conversion</h4>
+            <p>Energy per sample &asymp; Walden FoM &times; 2<sup>ENOB</sup>: each extra bit doubles it. With the illustrative FoMs of FHESim 04 (DAC 10 fJ, ADC 20 fJ per conversion step):</p>
+            <div class="table-wrap"><table>
+<thead><tr><th>ENOB</th><th>DAC pJ</th><th>ADC pJ</th><th>Pair pJ</th></tr></thead>
+<tbody>
+<tr><td>4</td><td>0.16</td><td>0.32</td><td>0.48</td></tr>
+<tr><td>6</td><td>0.64</td><td>1.28</td><td>1.92</td></tr>
+<tr><td>8</td><td>2.56</td><td>5.12</td><td>7.68</td></tr>
+<tr><td>10</td><td>10.24</td><td>20.48</td><td>30.72</td></tr>
+<tr><td>12</td><td>40.96</td><td>81.92</td><td>122.88</td></tr>
+<tr><td>14</td><td>163.84</td><td>327.68</td><td>491.52</td></tr>
+<tr><td>16</td><td>655.36</td><td>1,310.72</td><td>1,966.08</td></tr>
+</tbody></table></div>
+    <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;7. Conversion energy&rdquo;</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Static power never sleeps</h4>
+            <ul>
+                <li><strong>Lasers</strong> burn power whether or not work arrives; wall-plug efficiency sets the electrical cost.</li>
+                <li><strong>Thermal tuning</strong> holds resonant and interferometric devices on wavelength.</li>
+                <li><strong>SLM drivers</strong> and their frame buffers.</li>
+                <li>Static power must be amortised over work: an idle optical engine is pure cost. This is energy proportionality, from the sister series (<a href="https://brendanjameslynskey.github.io/InfSim_07_Power_and_Energy/#slide-08">LLM Inference Simulators 07, &ldquo;Energy Proportionality: Static Power and Load&rdquo;</a>).</li>
+            </ul>
+        </div>
+    </div>
+    <ul>
+        <li><strong>The break-even question</strong> is how many digital operations each conversion replaces. A length-L FFT convolution does about 10 log<sub>2</sub>(2L) + 6 FLOPs per output sample digitally (a forward and an inverse real FFT of length 2L, 2.5&middot;2L&middot;log<sub>2</sub>(2L) each, and the pointwise product, all divided over L outputs; the filter's spectrum is precomputed), against one DAC and one ADC sample optically. Deck 02 works it through per token: the break-even is near ENOB 12 for the illustrative coefficients.</li>
+        <li>Optical energy per MAC can scale down with problem size, because one optical pass reuses each converted value many times: Anderson et al. find optical energy per MAC scaling as 1/d with Transformer width d in their simulations (<a href="https://arxiv.org/abs/2302.10360">arXiv:2302.10360</a>). Large, reused operations are where optics competes.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-12">
+    <div class="slide-number">12</div>
+    <h2>What Optics Gives and What It Costs</h2>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Property</th><th>Free-space 4f engine</th><th>What it means for a workload</th></tr>
+        <tr><td>Transform cost</td><td>Time of flight; no operation count</td><td>Long transforms are as cheap as short ones, once the data is in</td></tr>
+        <tr><td>Parallelism</td><td>Millions of pixels; many 1-D transforms per frame</td><td>Wants batches of independent transforms (channels, sequences)</td></tr>
+        <tr><td>Precision</td><td>Analogue; this series assumes about 8 effective bits (illustrative)</td><td>Fine for FP8/INT8-like error, short of BF16 without averaging; exact integer arithmetic only for small blocks</td></tr>
+        <tr><td>Conversions</td><td>One DAC sample in and one ADC sample out per value, energy &prop; 2<sup>ENOB</sup></td><td>Needs many operations per converted value to pay</td></tr>
+        <tr><td>Weights</td><td>On the Fourier-plane mask, rewritten at the SLM's frame rate</td><td>Wants weights held across a batch: prefill, not token-by-token decode</td></tr>
+        <tr><td>Signs and phase</td><td>Lost at a square-law detector unless detected coherently</td><td>Coherent detection, or twice the passes</td></tr>
+        <tr><td>Static power</td><td>Lasers, tuning, drivers</td><td>Must be kept busy</td></tr>
+    </table>
+    </div>
+    <p>The sister series applied the same accounting to FHE, where exact modular arithmetic made the precision tax severe (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-10">FHESim 04, &ldquo;When It Wins and When It Loses&rdquo;</a>). Deck 02 applies it to LLM inference.</p>
+</section>
+
+<section class="slide" id="slide-13">
+    <div class="slide-number">13</div>
+    <h2>What to Take Away</h2>
+    <ul>
+        <li><strong>A lens is a Fourier transformer; two lenses and a mask are a convolver.</strong> The transform is free; the mask holds the weights.</li>
+        <li><strong>FFT convolution is circular</strong> unless zero-padded to twice the length, which is what makes it causal (the interactive, <a href="#slide-04">slide 04</a>).</li>
+        <li><strong>Detectors see intensity:</strong> sign and phase need coherent detection, a bias, split passes or retrieval.</li>
+        <li><strong>Float workloads need a noise level, not exactness:</strong> about 8.0 ENOB for INT8-like error and 10.3 for BF16-like; averaging buys bits at 4&times; passes per bit, and digit planes do not help.</li>
+        <li><strong>Conversions and static power are the bill.</strong> Optics pays only when each converted value is reused by many operations and the engine is kept busy.</li>
+        <li><strong>Next:</strong> <a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/">deck 02</a> asks where LLM inference has transforms to offer, and how much of the work they are.</li>
+    </ul>
+</section>
+
+<!-- ════════════════════════════════════ Footer ════════════════════════════════════ -->
+<footer class="footer">
+    <p>Part of the <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference">Fourier Optics for Inference series</a> &middot; <a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#glossary">glossary: every concept and where it is explained</a> &middot; numbers: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">analysis/results.md</a></p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;"><a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/">02 Transforms in Inference Workloads &rarr;</a></p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">Sister series: <a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/">LLM Inference Simulators</a> &middot; <a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/">FHE Accelerator Simulators</a> &middot; <a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/">Simulation Engineering Toolkit</a></p>
+</footer>
+
+<script>
+    // Smooth scroll for TOC links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    // Subtle fade-in on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.slide').forEach(slide => {
+        slide.style.opacity = '0';
+        slide.style.transform = 'translateY(30px)';
+        slide.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(slide);
+    });
+</script>
+
+</body>
+</html>
