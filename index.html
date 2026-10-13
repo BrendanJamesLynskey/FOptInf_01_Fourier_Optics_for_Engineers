@@ -801,7 +801,7 @@
 <header class="hero">
     <div class="series-label">Fourier Optics for Inference &mdash; Presentation 01</div>
     <h1><span class="accent">Fourier Optics</span> for Engineers</h1>
-    <p class="subtitle">How a lens computes a Fourier transform and a 4f system a convolution, in one pass of light: where the Fourier plane is, how the pattern scales with wavelength and why the light must be coherent; spatial light modulators, what a pixelated detector reads, and coherent (balanced) detection; on-chip slab lenses and butterfly meshes, and a photonic link module's signal path, its binary bit planes and the fibre's own spectrum; and the precision and energy bill: ENOB, noise, passes, and the converters around the optics. Every concept has a figure, and every mechanism an animation driven by a tested model.</p>
+    <p class="subtitle">How a lens computes a Fourier transform and a 4f system a convolution, in one pass of light: where the Fourier plane is, how the pattern scales with wavelength and why the light must be coherent; spatial light modulators, what a pixelated detector reads, and coherent (balanced) detection; on-chip slab lenses and butterfly meshes, and a photonic link module's signal path, its binary bit planes and the fibre's own spectrum; the precision and energy bill: ENOB, noise, passes, and the converters around the optics; and what a transformer layer's linear algebra would ask of optics. Every concept has a figure, and every mechanism an animation driven by a tested model.</p>
 
     <div class="tags">
         <span class="tag">4f system</span>
@@ -860,6 +860,8 @@
     .s-a { fill: var(--accent); font-size: 14px; }
     .s-line { stroke: var(--text-secondary); stroke-width: 1.5; fill: none; }
     .s-wave { stroke: var(--c-teal); stroke-width: 2; fill: none; }
+    #anim-layer select, #anim-layer .control-row label { min-height: 44px; display: inline-flex; align-items: center; gap: 0.5rem; }
+    #ly-opt { accent-color: var(--accent); width: 20px; height: 20px; }
     #slide-00 .contents-list li::before { content: attr(data-n); min-width: 2.4rem; }   /* show the slide's own id (02b, 08c ...) */
     .narrow-only, .fig svg.narrow-only { display: none; }   /* must outrank .fig svg { display: block } */
     @media (max-width: 640px) { .fig { padding: 0.45rem; } .anim-caption { font-size: 0.74rem; }
@@ -870,12 +872,12 @@
     <div class="slide-number">00</div>
     <h2>Topics We'll Cover</h2>
     <div class="fig map">
-        <svg class="wide-only" viewBox="0 0 600 250" role="img" aria-label="Map of the deck: the physics, light and detectors, on chip and a real module, precision, and the bill">
+        <svg class="wide-only" viewBox="0 0 600 250" role="img" aria-label="Map of the deck: the physics, light and detectors, on chip and a real module, precision, and the bill, including what a transformer layer would ask of optics">
             <a href="#slide-02"><rect class="s-box" x="4" y="10" width="184" height="96" rx="8"/><text class="s-a" x="16" y="36">1 &middot; The physics</text><text class="s-d" x="16" y="58">a lens computes an FT</text><text class="s-d" x="16" y="76">2f and 4f, &lambda; scale</text><text class="s-d" x="16" y="94">slides 01&ndash;04</text></a>
             <a href="#slide-05"><rect class="s-box" x="208" y="10" width="184" height="96" rx="8"/><text class="s-a" x="220" y="36">2 &middot; In and out</text><text class="s-d" x="220" y="58">coherence, modulators</text><text class="s-d" x="220" y="76">detectors, DFT, phase</text><text class="s-d" x="220" y="94">slides 05&ndash;07b</text></a>
             <a href="#slide-08"><rect class="s-box" x="412" y="10" width="184" height="96" rx="8"/><text class="s-a" x="424" y="36">3 &middot; On a chip</text><text class="s-d" x="424" y="58">slab lens or FFT mesh</text><text class="s-d" x="424" y="76">a real link module</text><text class="s-d" x="424" y="94">slides 08&ndash;08e</text></a>
             <a href="#slide-09"><rect class="s-box" x="4" y="140" width="184" height="96" rx="8"/><text class="s-a" x="16" y="166">4 &middot; Precision</text><text class="s-d" x="16" y="188">ENOB and noise</text><text class="s-d" x="16" y="206">passes, bit planes</text><text class="s-d" x="16" y="224">slides 09&ndash;10b</text></a>
-            <a href="#slide-11"><rect class="s-box" x="208" y="140" width="184" height="96" rx="8"/><text class="s-a" x="220" y="166">5 &middot; The bill</text><text class="s-d" x="220" y="188">conversion energy</text><text class="s-d" x="220" y="206">static power, verdict</text><text class="s-d" x="220" y="224">slides 11&ndash;12</text></a>
+            <a href="#slide-11"><rect class="s-box" x="208" y="140" width="184" height="96" rx="8"/><text class="s-a" x="220" y="166">5 &middot; The bill</text><text class="s-d" x="220" y="188">conversion energy</text><text class="s-d" x="220" y="206">verdict, transformers</text><text class="s-d" x="220" y="224">slides 11&ndash;12b</text></a>
             <a href="#slide-13"><rect class="s-acc" x="412" y="140" width="184" height="96" rx="8"/><text class="s-a" x="424" y="166">Take away</text><text class="s-d" x="424" y="188">six lines</text><text class="s-d" x="424" y="224">slide 13</text></a>
             <path class="s-line" d="M188 58 H208 M392 58 H412 M504 106 V122 H96 V140 M188 188 H208 M392 188 H412"/>
         </svg>
@@ -884,7 +886,7 @@
             <a href="#slide-05"><rect class="s-box" x="154" y="4" width="142" height="100" rx="8"/><text class="s-a" x="164" y="28">2 &middot; Light</text><text class="s-d" x="164" y="50">coherence, SLMs</text><text class="s-d" x="164" y="68">detectors, DFT</text><text class="s-d" x="164" y="90">05&ndash;07b</text></a>
             <a href="#slide-08"><rect class="s-box" x="4" y="118" width="142" height="100" rx="8"/><text class="s-a" x="14" y="142">3 &middot; On a chip</text><text class="s-d" x="14" y="164">slab or mesh</text><text class="s-d" x="14" y="182">a link module</text><text class="s-d" x="14" y="204">08&ndash;08e</text></a>
             <a href="#slide-09"><rect class="s-box" x="154" y="118" width="142" height="100" rx="8"/><text class="s-a" x="164" y="142">4 &middot; Precision</text><text class="s-d" x="164" y="164">ENOB, noise</text><text class="s-d" x="164" y="182">passes, planes</text><text class="s-d" x="164" y="204">09&ndash;10b</text></a>
-            <a href="#slide-11"><rect class="s-box" x="4" y="232" width="142" height="100" rx="8"/><text class="s-a" x="14" y="256">5 &middot; The bill</text><text class="s-d" x="14" y="278">conversions</text><text class="s-d" x="14" y="296">gives, costs</text><text class="s-d" x="14" y="318">11&ndash;12</text></a>
+            <a href="#slide-11"><rect class="s-box" x="4" y="232" width="142" height="100" rx="8"/><text class="s-a" x="14" y="256">5 &middot; The bill</text><text class="s-d" x="14" y="278">conversions</text><text class="s-d" x="14" y="296">costs, a layer</text><text class="s-d" x="14" y="318">11&ndash;12b</text></a>
             <a href="#slide-13"><rect class="s-acc" x="154" y="232" width="142" height="100" rx="8"/><text class="s-a" x="164" y="256">Take away</text><text class="s-d" x="164" y="278">six lines</text><text class="s-d" x="164" y="318">13</text></a>
         </svg>
     </div>
@@ -909,11 +911,12 @@
         <li data-n="10b"><a href="#slide-10b">Binary Input and Bit Planes</a></li>
         <li data-n="11"><a href="#slide-11">Conversion Energy and Static Power</a></li>
         <li data-n="12"><a href="#slide-12">What Optics Gives and What It Costs</a></li>
+        <li data-n="12b"><a href="#slide-12b">Transformers' Linear Algebra and Optics</a></li>
         <li data-n="13"><a href="#slide-13">What to Take Away</a></li>
     </ul>
     <div class="concepts">
         <p><strong>Concepts used here, and where they are explained.</strong> Each links to a glossary entry: this <a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#glossary">series glossary</a>, or the glossaries of LLM Inference Simulators, FHE Accelerator Simulators and the Simulation Engineering Toolkit for concepts those series already explain.</p>
-        <div class="chips"><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-optics" title="A lens Fourier-transforms the light field; two lenses with a mask between them multiply in the frequency domain, which is a convolution. The transform is free; the converters and lasers around it are not.">Fourier optics and the 4f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-lens" title="In coherent light, the field in a lens&#x27;s back focal plane is the 2-D Fourier transform of the field in its front focal plane; a point at distance x from the axis holds spatial frequency x/(λf). The transform is computed by propagation, in one pass, for every pixel at once.">The lens as a Fourier transformer</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-fourierplane" title="The back focal plane of a lens, one focal length behind it, with the input one focal length in front (a 2f system). Each plane-wave component of the input focuses to its own point there, x = λfu, so the plane holds the spectrum: where a camera reads it or a mask filters it. A second lens (4f) transforms back to a mirrored image.">Fourier plane and the 2f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-convthm" title="A convolution in one domain is a pointwise product in the other: F{h ∗ u} = F{h}·F{u}. A 4f system uses it optically (mask = filter spectrum); FFT convolution uses it digitally in O(n log n).">The convolution theorem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-longconv" title="A convolution whose filter is as long as the sequence, computed by FFT, pointwise multiply and inverse FFT in O(L log L) instead of O(L²). It is the token mixer of S4&#x27;s convolution mode, H3 and Hyena.">Long convolution by FFT</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-causalpad" title="An FFT computes a circular convolution, which wraps late inputs onto early outputs. Padding input and filter to at least 2L before the FFT makes it the linear, causal convolution a decoder needs.">Causal zero-padding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherence" title="Coherent light (a laser) adds complex field amplitudes, so signed and complex values interfere; incoherent light adds non-negative intensities. Coherent systems compute Fourier transforms of fields; incoherent ones are limited to non-negative quantities unless values are offset or split.">Coherent and incoherent light</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-slm" title="A pixelated device that writes values into a light field. Liquid-crystal SLMs modulate phase or amplitude and settle in tens of milliseconds; a 2-megapixel digital micromirror device switches amplitude at about 1 kHz with 8-bit depth (20 kHz binary). Pixel count and frame rate bound how fast inputs and Fourier-plane masks can change.">Spatial light modulator (SLM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-phaseproblem" title="Photodetectors measure intensity |E|², losing the sign and phase of the field. Remedies: interfere with a reference beam (coherent detection), add a bias so the field stays positive, split positive and negative parts into two passes, or recover phase iteratively (phase retrieval).">Square-law detection and the phase problem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherentdet" title="Mixing the signal field with a local oscillator from the same laser in a 50:50 coupler and subtracting the two photodiode currents (balanced detection). The difference is 2·Re(E·LO*), linear in the field, so sign and phase survive: an oscillator at 0° reads the real part, at 90° the imaginary part.">Coherent detection and balanced photodiodes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzimesh" title="A triangular (Reck) or rectangular (Clements) grid of MZIs implements any N×N unitary, including the DFT, on a chip: N(N−1)/2 MZIs, each with a phase shifter that must be calibrated and held.">Mach&ndash;Zehnder interferometer (MZI) meshes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzm" title="An interferometer with a phase shifter in one arm that turns a voltage into a change of optical amplitude: how electrical data is written onto light in a waveguide, at GHz symbol rates. The link module of slide 08c has four, driven with binary (NRZ) levels.">Mach&ndash;Zehnder modulator (MZM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-onchipfft" title="On-chip alternatives to a free-space lens: diffractive or slab-lens structures, MZI meshes, and coupler and delay-line FFT circuits (used for all-optical OFDM). They are compact and fast but much smaller than a free-space 4f system.">Integrated optical Fourier transforms</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-wdm" title="Several wavelengths sharing one waveguide or fibre, each carrying its own data. Through an on-chip transform each wavelength can in principle run its own transform at once, multiplying throughput; in free space, mixed wavelengths smear the spectrum instead.">Wavelength-division multiplexing (WDM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-nrz" title="Non-return-to-zero: one bit per symbol, held for the whole symbol, as two levels; the usual format on a short-reach link. Filtering the line signal below the bit rate smears neighbouring bits into each other (inter-symbol interference), closing the eye and flipping bits: the fibre&#x27;s spectrum is the bits&#x27;, not the data&#x27;s.">NRZ signalling and inter-symbol interference</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-computetransit" title="Operations applied in a link&#x27;s data path, between transmitter and receiver, on data that must move anyway. At about 1–2 operations per byte at line rate it suits requantising or frequency-compressing the KV hand-off, not matmuls; it helps latency only where the link is the bottleneck. Speculative here.">Compute in transit</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-enob" title="Effective number of bits: the real precision of an analogue chain. Rounding to the exact integer needs the error below one half, which sets a minimum ENOB for each block size and digit width.">ENOB and exact rounding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-floatenob" title="For float workloads the analogue chain must match the number format&#x27;s own rounding error, not be exact. Relative RMS error = crest × 2^−ENOB × 2/√12; matching BF16 needs about 10.3 ENOB, INT8 8.0, FP8 E4M3 6.3. FHE&#x27;s exact-rounding rule does not transfer to long convolutions.">The noise rule for floating-point workloads</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-crest" title="The ratio of a signal&#x27;s peak to its RMS value. An ADC&#x27;s full scale must cover the peak, so a high crest factor wastes resolution on the rare large values: the noise rule&#x27;s error scales with it.">Crest factor</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-averaging" title="Repeating an analogue operation k times and averaging cuts random noise by √k, buying ½ log2 k bits: one extra bit costs four times the passes. Digit planes, which make FHE exact, do not help a float workload.">Dynamic precision by repeated passes</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-digits" title="Splitting each operand into d digits of b bits so that low-precision analogue products can be recombined exactly in digital logic. Narrower digits need less precision but more passes.">Digit decomposition (bit slicing)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-walden" title="Converter energy per sample ≈ FoM × 2ENOB, so every extra bit of precision doubles the energy of each DAC or ADC conversion.">Walden figure of merit</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-conversion" title="Every value entering or leaving the optics costs a DAC or ADC sample, at Walden-FoM × 2^ENOB joules. With the series&#x27; illustrative FoMs a Hyena-style long convolution breaks even with a 1 pJ/FLOP digital FFT at about 12 ENOB.">Conversion-bound optics and the break-even ENOB</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-photonicpower" title="Optical operations are cheap, but lasers and thermal tuning burn static power, and every DAC/ADC conversion costs energy that grows with resolution. Gains need high reuse per conversion and a busy core.">Power in photonic compute</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-staticdyn" title="Static power (leakage, clocks, always-on logic) is paid whenever a chip is on; dynamic power αCV²f is paid for switching. Energy per operation scales with V², which is why lowering voltage pays quadratically.">Static and dynamic power</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-ntt" title="The FFT over a finite field Zq. It moves a limb between coefficient and evaluation form in (N/2) log N butterflies, so polynomial multiplication becomes element-wise. Every key switch and rescale runs NTTs.">Number-theoretic transform (NTT)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-bluestein" title="Rewrites a DFT as chirp multiplies around a convolution (using jk = (j² + k² − (k−j)²)/2), which lets a convolution engine compute an exact modular DFT.">Bluestein's algorithm</a></div>
+        <div class="chips"><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-optics" title="A lens Fourier-transforms the light field; two lenses with a mask between them multiply in the frequency domain, which is a convolution. The transform is free; the converters and lasers around it are not.">Fourier optics and the 4f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-lens" title="In coherent light, the field in a lens&#x27;s back focal plane is the 2-D Fourier transform of the field in its front focal plane; a point at distance x from the axis holds spatial frequency x/(λf). The transform is computed by propagation, in one pass, for every pixel at once.">The lens as a Fourier transformer</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-fourierplane" title="The back focal plane of a lens, one focal length behind it, with the input one focal length in front (a 2f system). Each plane-wave component of the input focuses to its own point there, x = λfu, so the plane holds the spectrum: where a camera reads it or a mask filters it. A second lens (4f) transforms back to a mirrored image.">Fourier plane and the 2f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-convthm" title="A convolution in one domain is a pointwise product in the other: F{h ∗ u} = F{h}·F{u}. A 4f system uses it optically (mask = filter spectrum); FFT convolution uses it digitally in O(n log n).">The convolution theorem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-longconv" title="A convolution whose filter is as long as the sequence, computed by FFT, pointwise multiply and inverse FFT in O(L log L) instead of O(L²). It is the token mixer of S4&#x27;s convolution mode, H3 and Hyena.">Long convolution by FFT</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-causalpad" title="An FFT computes a circular convolution, which wraps late inputs onto early outputs. Padding input and filter to at least 2L before the FFT makes it the linear, causal convolution a decoder needs.">Causal zero-padding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherence" title="Coherent light (a laser) adds complex field amplitudes, so signed and complex values interfere; incoherent light adds non-negative intensities. Coherent systems compute Fourier transforms of fields; incoherent ones are limited to non-negative quantities unless values are offset or split.">Coherent and incoherent light</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-slm" title="A pixelated device that writes values into a light field. Liquid-crystal SLMs modulate phase or amplitude and settle in tens of milliseconds; a 2-megapixel digital micromirror device switches amplitude at about 1 kHz with 8-bit depth (20 kHz binary). Pixel count and frame rate bound how fast inputs and Fourier-plane masks can change.">Spatial light modulator (SLM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-phaseproblem" title="Photodetectors measure intensity |E|², losing the sign and phase of the field. Remedies: interfere with a reference beam (coherent detection), add a bias so the field stays positive, split positive and negative parts into two passes, or recover phase iteratively (phase retrieval).">Square-law detection and the phase problem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherentdet" title="Mixing the signal field with a local oscillator from the same laser in a 50:50 coupler and subtracting the two photodiode currents (balanced detection). The difference is 2·Re(E·LO*), linear in the field, so sign and phase survive: an oscillator at 0° reads the real part, at 90° the imaginary part.">Coherent detection and balanced photodiodes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzimesh" title="A triangular (Reck) or rectangular (Clements) grid of MZIs implements any N×N unitary, including the DFT, on a chip: N(N−1)/2 MZIs, each with a phase shifter that must be calibrated and held.">Mach&ndash;Zehnder interferometer (MZI) meshes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-opticalmatmul" title="Applying a general, learned weight matrix in light: an MZI mesh sets W = UΣV* with two unitary meshes and a row of attenuators, or a wavelength-multiplexed crossbar holds the weights in its cells. It is not Fourier optics, since a lens computes one fixed transform, and it pays the same bills: a conversion per value, analogue precision and weight reloads. Nonlinear steps between matmuls force a conversion out of the light and back.">Programmable optical matrix multiply</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-circulant" title="A weight matrix made of circulant blocks, each defined by one vector, so multiplying by it is an FFT, a pointwise product and an inverse FFT (CirCNN). It turns matmuls into transforms; at LLM scale it is speculative.">Block-circulant weights</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-transformengine" title="An optical MAC accelerates every matrix multiply (the simulator&#x27;s hypothetical optical part); a Fourier transform engine accelerates only FFT and convolution work and leaves matmuls to a digital part.">Transform engine against optical MAC</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzm" title="An interferometer with a phase shifter in one arm that turns a voltage into a change of optical amplitude: how electrical data is written onto light in a waveguide, at GHz symbol rates. The link module of slide 08c has four, driven with binary (NRZ) levels.">Mach&ndash;Zehnder modulator (MZM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-onchipfft" title="On-chip alternatives to a free-space lens: diffractive or slab-lens structures, MZI meshes, and coupler and delay-line FFT circuits (used for all-optical OFDM). They are compact and fast but much smaller than a free-space 4f system.">Integrated optical Fourier transforms</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-wdm" title="Several wavelengths sharing one waveguide or fibre, each carrying its own data. Through an on-chip transform each wavelength can in principle run its own transform at once, multiplying throughput; in free space, mixed wavelengths smear the spectrum instead.">Wavelength-division multiplexing (WDM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-nrz" title="Non-return-to-zero: one bit per symbol, held for the whole symbol, as two levels; the usual format on a short-reach link. Filtering the line signal below the bit rate smears neighbouring bits into each other (inter-symbol interference), closing the eye and flipping bits: the fibre&#x27;s spectrum is the bits&#x27;, not the data&#x27;s.">NRZ signalling and inter-symbol interference</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-computetransit" title="Operations applied in a link&#x27;s data path, between transmitter and receiver, on data that must move anyway. At about 1–2 operations per byte at line rate it suits requantising or frequency-compressing the KV hand-off, not matmuls; it helps latency only where the link is the bottleneck. Speculative here.">Compute in transit</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-enob" title="Effective number of bits: the real precision of an analogue chain. Rounding to the exact integer needs the error below one half, which sets a minimum ENOB for each block size and digit width.">ENOB and exact rounding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-floatenob" title="For float workloads the analogue chain must match the number format&#x27;s own rounding error, not be exact. Relative RMS error = crest × 2^−ENOB × 2/√12; matching BF16 needs about 10.3 ENOB, INT8 8.0, FP8 E4M3 6.3. FHE&#x27;s exact-rounding rule does not transfer to long convolutions.">The noise rule for floating-point workloads</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-crest" title="The ratio of a signal&#x27;s peak to its RMS value. An ADC&#x27;s full scale must cover the peak, so a high crest factor wastes resolution on the rare large values: the noise rule&#x27;s error scales with it.">Crest factor</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-averaging" title="Repeating an analogue operation k times and averaging cuts random noise by √k, buying ½ log2 k bits: one extra bit costs four times the passes. Digit planes, which make FHE exact, do not help a float workload.">Dynamic precision by repeated passes</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-digits" title="Splitting each operand into d digits of b bits so that low-precision analogue products can be recombined exactly in digital logic. Narrower digits need less precision but more passes.">Digit decomposition (bit slicing)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-walden" title="Converter energy per sample ≈ FoM × 2ENOB, so every extra bit of precision doubles the energy of each DAC or ADC conversion.">Walden figure of merit</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-conversion" title="Every value entering or leaving the optics costs a DAC or ADC sample, at Walden-FoM × 2^ENOB joules. With the series&#x27; illustrative FoMs a Hyena-style long convolution breaks even with a 1 pJ/FLOP digital FFT at about 12 ENOB.">Conversion-bound optics and the break-even ENOB</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-photonicpower" title="Optical operations are cheap, but lasers and thermal tuning burn static power, and every DAC/ADC conversion costs energy that grows with resolution. Gains need high reuse per conversion and a busy core.">Power in photonic compute</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-staticdyn" title="Static power (leakage, clocks, always-on logic) is paid whenever a chip is on; dynamic power αCV²f is paid for switching. Energy per operation scales with V², which is why lowering voltage pays quadratically.">Static and dynamic power</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-ntt" title="The FFT over a finite field Zq. It moves a limb between coefficient and evaluation form in (N/2) log N butterflies, so polynomial multiplication becomes element-wise. Every key switch and rescale runs NTTs.">Number-theoretic transform (NTT)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-bluestein" title="Rewrites a DFT as chirp multiplies around a convolution (using jk = (j² + k² − (k−j)²)/2), which lets a convolution engine compute an exact modular DFT.">Bluestein's algorithm</a></div>
     </div>
 </section>
 
@@ -1754,6 +1757,45 @@
     <p>The sister series applied the same accounting to FHE, where exact modular arithmetic made the precision tax severe (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-10">FHESim 04, &ldquo;When It Wins and When It Loses&rdquo;</a>). Deck 02 applies it to LLM inference.</p>
 </section>
 
+<section class="slide" id="slide-12b">
+    <div class="slide-number">12b</div>
+    <h2>Transformers' Linear Algebra and Optics</h2>
+    <p>A lens computes <strong>one fixed linear map</strong>, the Fourier transform; a 4f system adds one pointwise multiply in the Fourier plane. A transformer layer needs something else: <strong>learned weight matrices</strong>, products of two data streams, and nonlinear steps between them. Follow one layer through, step by step, and see which steps light could take.</p>
+    <div class="fig" id="anim-layer">
+        <div class="control-row"><label for="ly-variant">Layer</label><select id="ly-variant"><option value="transformer" selected>Transformer (Llama-3-8B shape)</option><option value="fnet">FNet-shaped mixing</option><option value="hyena">Hyena-2</option><option value="circulant">Hyena-2 + block-circulant weights</option></select></div>
+        <div class="control-row"><label for="ly-opt"><input type="checkbox" id="ly-opt" checked> Assume a programmable optical matmul (MZI mesh or crossbar)</label></div>
+        <canvas id="cv-layer" aria-label="Animation of one layer, step by step: each step sits in the light lane or the electronics lane according to what optics could do, with a DAC or ADC marker at every crossing and a running count of conversions"></canvas>
+        <p class="fig-cap">Each step is tagged by what optics could do with it: <span style="color: var(--c-teal)">FT</span> a transform or convolution (Fourier optics: a lens, or 4f + mask), <span style="color: var(--c-blue)">MM</span> a matrix multiply by learned weights or by other data (needs a programmable matmul, which is not Fourier optics), <span style="color: var(--c-orange)">NL</span> nonlinear or data &times; data (must leave the optics). Every crossing between light and electronics is a <span style="color: var(--c-amber)">DAC or ADC per value</span>. Consecutive optical steps are assumed to stay in light, which is optimistic. The sequence is computed by <code>opticalPlan</code> and checked by a node test. Untick the box: a standard decoder then has nothing for optics to do at all.</p>
+    </div>
+    <div class="fig">
+        <canvas id="cv-circ" aria-label="Side by side: a circulant 8 by 8 matrix, defined by 8 numbers, applied by a 4f system with an 8-value mask; a general 8 by 8 matrix, applied as U Sigma V-star by two meshes of 28 Mach-Zehnder interferometers and 8 attenuators"></canvas>
+        <p class="fig-cap">Left: a circulant matrix (every row a shift of one vector) is exactly what a 4f system with a mask applies; the check computes Wx both ways (<code>circulant</code>, <code>circApplyFFT</code>). Right: a general learned matrix needs a programmable mesh: two unitary meshes of N(N&minus;1)/2 Mach&ndash;Zehnder interferometers and N attenuators, N&sup2; settings in all (Reck/Clements; <code>mziCount</code>).</p>
+    </div>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>1 &middot; The convolution route</h4>
+            <p>4f + mask multiplies by a circulant matrix, so it helps only if the weights are circulant. With block-circulant weights the transform work is 13.99% of prefill FLOPs at 2,048 tokens, or 84.54% (Amdahl bound 6.469x) with the LM head on the last token only. That is speculative: no published LLM uses such weights (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-08">deck 02, &ldquo;Structured Weights: Circulant and Monarch&rdquo;</a>).</p>
+            <p><strong>The mask is the weights:</strong> 269 mask rewrites per Hyena-2 forward pass at 2,048 tokens take 261 ms on an 8-bit micromirror device (1.03 kHz), against 59.033 ms for a GPU's whole prefill (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-11">deck 02, &ldquo;Holding the Weights: Fourier-Plane Mask Capacity&rdquo;</a>).</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>2 &middot; Models that mix by Fourier transform</h4>
+            <p>FNet and Hyena put a real transform in the layer, but it is what makes them cheap, so it is a small share: 0.09% of prefill FLOPs for FNet-shaped mixing and 0.20% for Hyena-2 (Amdahl bound 1.002x) at 2,048 tokens. The projections and the MLP are the rest (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-06">deck 02, &ldquo;The Amdahl Analysis: Prefill FLOP Shares&rdquo;</a>).</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>3 &middot; General optical matmul exists, but it is not Fourier optics</h4>
+            <p>Programmable MZI meshes apply a weight matrix through its SVD (Shen et al., <a href="https://arxiv.org/abs/1610.02365">arXiv:1610.02365</a>); wavelength-multiplexed crossbars hold the weights in phase-change cells (Feldmann et al., <a href="https://arxiv.org/abs/2002.00281">arXiv:2002.00281</a>). They pay the same bills: a conversion per value, analogue precision, and weight reloads. With this series' illustrative converter figures, conversions break even with digital FFT work at about ENOB 12.0 (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-10">deck 02, &ldquo;Precision and Energy per Token&rdquo;</a>).</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>4 &middot; Nonlinear steps leave the optics</h4>
+            <p>Softmax, LayerNorm or RMSNorm, the activations and the data &times; data gates cannot be done by a fixed linear optical system. Each one forces a trip out of the light and back, so a layer pays conversions both ways several times (the animation counts them), and every conversion is a DAC or ADC sample the optics must win back (<a href="#slide-11">slide 11</a>).</p>
+        </div>
+    </div>
+    <div class="callout">
+        <div class="callout-label"><span class="src-tag paper">paper</span> &nbsp;5 &middot; the link module's own operation set</div>
+        <p>The photonic link module of <a href="#slide-08c">slide 08c</a> lists MAC and floating-point MAC among its operations, alongside the FFT and NTT. Its future-work section projects &ldquo;45 GFLOPS of FP4 (E2M1) MAC &hellip; on a 112 GBaud/s photonic transceiver link for an additional 1 pJ/bit&rdquo; (<a href="https://arxiv.org/abs/2608.21536">arXiv:2608.21536</a>). That is a <strong>projection</strong> for a future chip, not a measurement, and it is MAC only.</p>
+    </div>
+</section>
+
 <section class="slide" id="slide-13">
     <div class="slide-number">13</div>
     <h2>What to Take Away</h2>
@@ -1786,6 +1828,7 @@
         <li><strong>The fibre is a different domain:</strong> its spectrum is the bits', so filtering it causes inter-symbol interference; to save link time, transform and keep the band before the wire. A fixed band is a free mask, top-k a digital decision (<a href="#slide-08d">08d</a>, <a href="#slide-08e">08e</a>).</li>
         <li><strong>Float workloads need a noise level, not exactness:</strong> about 8.0 ENOB for INT8-like error and 10.3 for BF16-like; averaging buys bits at 4&times; passes per bit, and digit planes do not help. Exact integer results are a different game: binary planes need only be read well enough to round (<a href="#slide-10b">10b</a>, an inference).</li>
         <li><strong>Conversions and static power are the bill.</strong> Optics pays only when each converted value is reused by many operations and the engine is kept busy.</li>
+        <li><strong>A transformer layer is mostly learned matmuls and nonlinear steps, not transforms.</strong> A lens is one fixed linear map: it helps only circulant weights (speculative) or Fourier-mixing layers (a small share); general matmul needs a programmable mesh, which is not Fourier optics; and every nonlinear step forces a conversion out and back (<a href="#slide-12b">12b</a>).</li>
         <li><strong>Next:</strong> <a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/">deck 02</a> asks where LLM inference has transforms to offer, and how much of the work they are.</li>
     </ul>
 </section>
@@ -2022,10 +2065,66 @@
     function topK(e, k) { return e.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).slice(0, k).map(p => p[1]).sort((a, b) => a - b); }
     function captured(e, idx) { const tot = e.reduce((s, v) => s + v, 0); return idx.reduce((s, i) => s + e[i], 0) / tot; }
 
+    // ── 9. A transformer layer, step by step: what optics could do ───────
+    // kind: 'ft' = a transform or convolution (Fourier optics can do it: a lens, or 4f + mask);
+    //       'mm' = a matrix multiply by learned weights or by other data (needs a programmable matmul, not FO);
+    //       'nl' = nonlinear, or a product of two data streams (must leave the optics).
+    const LAYERS = {
+        transformer: [['norm', 'nl', 'RMSNorm'], ['Q K V', 'mm', 'Q, K, V projections (learned weights)'],
+            ['QKᵀ', 'mm', 'attention scores QKᵀ (data × data)'], ['softmax', 'nl', 'softmax over the scores'],
+            ['AV', 'mm', 'weighted sum AV (data × data)'], ['W_O', 'mm', 'output projection (learned weights)'],
+            ['add+norm', 'nl', 'residual add and RMSNorm'], ['up/gate', 'mm', 'MLP up and gate projections (learned weights)'],
+            ['SwiGLU', 'nl', 'SwiGLU activation'], ['down', 'mm', 'MLP down projection (learned weights)']],
+        fnet: [['norm', 'nl', 'LayerNorm'], ['2-D DFT', 'ft', 'Fourier mixing: a 2-D DFT over tokens and features, real part kept'],
+            ['add+norm', 'nl', 'residual add and LayerNorm'], ['up', 'mm', 'MLP up projection (learned weights)'],
+            ['GELU', 'nl', 'GELU activation'], ['down', 'mm', 'MLP down projection (learned weights)']],
+        hyena: [['norm', 'nl', 'RMSNorm'], ['in proj', 'mm', 'input projections v, x₁, x₂ (learned weights)'],
+            ['h₁ ∗', 'ft', 'long convolution with filter h₁ (an FFT convolution)'], ['× x₁', 'nl', 'gate: multiply by x₁ (data × data)'],
+            ['h₂ ∗', 'ft', 'long convolution with filter h₂'], ['× x₂', 'nl', 'gate: multiply by x₂ (data × data)'],
+            ['out proj', 'mm', 'output projection (learned weights)'], ['add+norm', 'nl', 'residual add and RMSNorm'],
+            ['up/gate', 'mm', 'MLP up and gate projections (learned weights)'], ['SwiGLU', 'nl', 'SwiGLU activation'],
+            ['down', 'mm', 'MLP down projection (learned weights)']],
+    };
+    LAYERS.circulant = LAYERS.hyena.map(([s, k, d]) => k === 'mm' ? [s, 'ft', d.replace('(learned weights)', '(block-circulant: 4f + mask)')] : [s, k, d]);
+    function layerOps(variant) { return LAYERS[variant].map(([short, kind, name]) => ({ short, kind, name })); }
+    // The state sequence of the animation: one state per step, then a last state for the return to the residual stream.
+    // optMatmul: a programmable optical matmul (MZI mesh, crossbar) is assumed to exist, so 'mm' steps run in light too.
+    // Consecutive optical steps stay in light (optimistic); every optical/electronic boundary is one conversion per value.
+    function opticalPlan(variant, optMatmul) {
+        const ops = layerOps(variant), states = [];
+        let prev = false, count = 0;
+        ops.forEach((op, i) => {
+            const optical = op.kind === 'ft' || (op.kind === 'mm' && !!optMatmul);
+            const boundary = optical === prev ? null : (optical ? 'in' : 'out');
+            if (boundary) count++;
+            states.push({ i, op, optical, boundary, count });
+            prev = optical;
+        });
+        const boundary = prev ? 'out' : null;
+        if (boundary) count++;
+        states.push({ i: ops.length, op: { short: 'residual', kind: 'end', name: 'back to the residual stream (electronic) for the next layer' }, optical: false, boundary, count });
+        return states;
+    }
+    // Circulant matrix (row r = c shifted right by r) and the two ways to apply it
+    function circulant(c) { const n = c.length; return Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, j) => c[(j - r + n) % n])); }
+    function matVec(W, x) { return W.map(row => row.reduce((s, w, j) => s + w * x[j], 0)); }
+    // C x via the convolution theorem: what a 4f system with mask FFT(c) computes. y_r = sum_j c[(j - r) mod n] x_j,
+    // i.e. a circular cross-correlation, so the mask is the conjugate spectrum of c.
+    function circApplyFFT(c, x) {
+        const n = c.length, cr = Float64Array.from(c), ci = new Float64Array(n), xr = Float64Array.from(x), xi = new Float64Array(n);
+        fft(cr, ci, false); fft(xr, xi, false);
+        const yr = new Float64Array(n), yi = new Float64Array(n);
+        for (let k = 0; k < n; k++) { yr[k] = cr[k] * xr[k] + ci[k] * xi[k]; yi[k] = cr[k] * xi[k] - ci[k] * xr[k]; }
+        fft(yr, yi, true);
+        return Array.from(yr);
+    }
+    // An N x N matrix on an MZI mesh: W = U S V*, two unitary meshes of N(N-1)/2 MZIs (Reck/Clements) and N attenuators
+    function mziCount(n) { return { perUnitary: n * (n - 1) / 2, attenuators: n, total: n * (n - 1) + n }; }
+
     const API = { rng, gauss, fft, dft, fft2, fftshift2, fourierX, fourierXExact, trace4f, grating, powerSpectrum, intensityAt,
         multiIntensity, sinc, pixelFT, balanced, twoBeam, slabField, fftStages, opticsRateGBps, radixStages, bitPlanes,
         cyclicConv, readPlane, recombine, bitPlaneRun, prbs, nrz, lowpass, eye, flipFloat32Bit, chunk, binEnergy, lowBand,
-        topK, captured };
+        topK, captured, layerOps, opticalPlan, circulant, matVec, circApplyFFT, mziCount };
     if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.FOP01 = API;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -2041,7 +2140,7 @@
     window.fopAnims = {};
     window.FopAnim = function (id, opts) {
         const root = document.getElementById(id);
-        const steps = opts.steps, stepMs = opts.stepMs || 1400;
+        let steps = opts.steps; const stepMs = opts.stepMs || 1400;
         const bar = document.createElement('div');
         bar.className = 'anim-controls';
         bar.innerHTML = `<button type="button" class="btn secondary" data-a="reset" aria-label="Reset">&#8634; Reset</button>`
@@ -2108,7 +2207,9 @@
         }
         render();
         const api = {
-            get step() { return st.step; }, get playing() { return st.playing; }, steps,
+            get step() { return st.step; }, get playing() { return st.playing; }, get steps() { return steps; },
+            // a parameter changed the model: new step count, restart from step 0 (keeps playing if it was)
+            restart(n) { steps = n; scrub.max = n - 1; go(0, st.playing); },
             caption: () => cap.textContent, set(s) { st.userPaused = true; pause(); go(s, false); return api; },
             play() { st.userPaused = false; play(); }, pause() { st.userPaused = true; pause(); }, redraw: render,
         };
@@ -2838,6 +2939,140 @@
         $('bp-sigma').addEventListener('input', () => { $('bp-sigma-val').textContent = sigma().toFixed(2); run = M.bitPlaneRun(X, H, B, sigma(), 1); A.redraw(); });
         redraws.push(A.redraw);
     }
+
+    // ── slide 12b: a transformer layer, step by step, and the conversions it forces ──
+    if ($('anim-layer')) {
+        const KC = { ft: 'teal', mm: 'blue', nl: 'orange', end: 'sec' }, KT = { ft: 'FT', mm: 'MM', nl: 'NL', end: '' };
+        let variant = $('ly-variant').value, opt = $('ly-opt').checked, plan = M.opticalPlan(variant, opt);
+        const kindText = k => k === 'ft' ? 'a transform or convolution, so Fourier optics can do it'
+            : k === 'mm' ? (opt ? 'a matrix multiply, here assumed on a programmable optical matmul (an MZI mesh or crossbar), which is not Fourier optics'
+                                : 'a matrix multiply: a lens computes one fixed transform, not this matrix, so it stays digital')
+            : 'nonlinear (or a product of two data streams), so it must leave the optics';
+        function draw(step, frac) {
+            const cv = $('cv-layer'), cw = cv.clientWidth || 600, narrow = cw < 560, n = plan.length;
+            const px0 = Math.max(10, Math.min(13, cw / 58));
+            const bh = narrow ? 2 * px0 + 10 : 2.6 * px0 + 14, rowH = bh + 10;
+            const H = narrow ? 4 * px0 + 30 + n * rowH + 10 : 2 * px0 + 30 + 2 * (bh + 34) + px0;
+            const { g, w, h } = window.fopCanvas(cv, H / cw), px = font(g, w, narrow ? 0.95 : 1);
+            const top = narrow ? 4 * px + 24 : 2 * px + 14, cur = plan[step];
+            const labelFont = colw => { const k = Math.min(1, (colw - 10) / (8 * 0.62 * px)); g.font = `${px * k}px "Geist Mono", monospace`; };
+            // the two lanes: light and electronics
+            let pos;
+            if (!narrow) {
+                const colW = (w - 16) / n, laneL = top, laneE = top + bh + 34;
+                g.fillStyle = 'rgba(151,205,198,0.10)'; g.fillRect(8, laneL - 14, w - 16, bh + 22);
+                txt(g, 'light', 12, laneL - 2, col('teal')); txt(g, 'electronics', 12, laneE + bh + 18, col('sec'));
+                pos = (s, optical) => [8 + s * colW + 4, optical ? laneL + 4 : laneE, colW - 8];
+            } else {
+                const half = (w - 16) / 2;
+                g.fillStyle = 'rgba(151,205,198,0.10)'; g.fillRect(8 + half, top - 4, half, n * rowH + 4);
+                txt(g, 'electronics', 8 + half / 2, top - 8, col('sec'), 'center'); txt(g, 'light', 8 + 1.5 * half, top - 8, col('teal'), 'center');
+                pos = (s, optical) => [8 + (optical ? half : 0) + 10, top + s * rowH, half - 20];
+            }
+            const ctr = s => { const [x, y, bw] = pos(s, plan[s].optical); return [x + bw / 2, y + bh / 2]; };
+            // path and conversion markers up to the current step
+            for (let s = 1; s <= step; s++) line(g, [ctr(s - 1), ctr(s)], col('sec'), 1.5);
+            if (step === 0 && plan[0].optical) line(g, [[ctr(0)[0], ctr(0)[1] + (narrow ? 0 : bh + 30)], ctr(0)], col('sec'), 1.5);
+            plan.forEach((p, s) => {
+                if (!p.boundary || s > step) return;
+                const [x1, y1] = s ? ctr(s - 1) : [ctr(0)[0] - (narrow ? 0 : 20), ctr(0)[1] + (narrow ? -rowH : 0)], [x2, y2] = ctr(s);
+                const mx = narrow ? (x1 + x2) / 2 : (s ? (x1 + x2) / 2 : x2 - 20), my = narrow ? (s ? (y1 + y2) / 2 : y2 - rowH / 2) : (y1 + y2) / 2 + (s ? 0 : 0);
+                const r = px * 0.75;
+                g.fillStyle = col('amber'); g.beginPath(); g.moveTo(mx, my - r); g.lineTo(mx + r, my); g.lineTo(mx, my + r); g.lineTo(mx - r, my); g.closePath(); g.fill();
+                txt(g, p.boundary === 'in' ? 'DAC' : 'ADC', mx + r + 3, my + px * 0.35, col('amber'));
+            });
+            // the step boxes: kind colour + a kind tag (never colour alone); later steps muted
+            plan.forEach((p, s) => {
+                const [x, y, bw] = pos(s, p.optical), act = s === step;
+                g.globalAlpha = s > step ? 0.35 : 1;
+                g.fillStyle = col('code'); g.fillRect(x, y, bw, bh);
+                g.strokeStyle = act ? col('acc') : col(KC[p.op.kind]); g.lineWidth = act ? 3 : 1.4; g.strokeRect(x, y, bw, bh);
+                g.save(); g.beginPath(); g.rect(x, y, bw, bh); g.clip();
+                if (!narrow) labelFont(bw);
+                txt(g, p.op.short, x + 4, y + px + 4, act ? col('acc') : col('text'));
+                if (narrow) txt(g, KT[p.op.kind], x + bw - 4, y + px + 4, col(KC[p.op.kind]), 'right');
+                else txt(g, KT[p.op.kind], x + 4, y + 2 * px + 9, col(KC[p.op.kind]));
+                g.restore(); g.globalAlpha = 1; font(g, w, narrow ? 0.95 : 1);
+            });
+            // the moving value: from the previous step to this one
+            if (step > 0 && frac < 1) {
+                const [x1, y1] = ctr(step - 1), [x2, y2] = ctr(step), t = ease(frac);
+                g.fillStyle = col('acc'); g.beginPath(); g.arc(lerp(x1, x2, t), lerp(y1, y2, t), 5, 0, 2 * Math.PI); g.fill();
+            }
+            txt(g, `conversions this layer: ${cur.count}`, narrow ? 8 : w - 8, narrow ? 2 * px + 8 : px + 2, col('amber'), narrow ? 'left' : 'right');
+            txt(g, 'FT transform  MM matmul  NL nonlinear', 8, px + 2, col('sec'));
+            if (!narrow) txt(g, `${variant === 'circulant' ? 'block-circulant weights' : variant}${opt ? ', optical matmul assumed' : ''}`, 8, h - 4, col('sec'));
+            window.fopFig.layer = { variant, opt, step, count: cur.count, boundary: cur.boundary, optical: cur.optical, total: plan[n - 1].count };
+        }
+        const caption = s => {
+            const p = plan[s];
+            if (p.op.kind === 'end') return `End of layer: ${p.op.name}${p.boundary ? ', so the light is read out (ADC, one conversion per value)' : ''}. This layer crossed the optical/electronic boundary ${p.count} times: ${p.count / 2} round trips, each a DAC and an ADC per value.`;
+            return `Step ${s + 1}, ${p.op.name}: ${kindText(p.op.kind)}.${p.boundary === 'in' ? ' Entering the optics: a DAC and a modulator per value.' : p.boundary === 'out' ? ' Leaving the optics: a detector and an ADC per value.' : ''} Conversions so far: ${p.count}.`;
+        };
+        const A = window.FopAnim('anim-layer', { steps: plan.length, draw, caption, stepMs: 1500 });
+        const rerun = () => { variant = $('ly-variant').value; opt = $('ly-opt').checked; plan = M.opticalPlan(variant, opt); A.restart(plan.length); };
+        $('ly-variant').addEventListener('change', rerun); $('ly-opt').addEventListener('change', rerun);
+        redraws.push(A.redraw);
+    }
+    // ── slide 12b: circulant W → 4f with a mask; general W → an MZI mesh ──
+    function drawCirc() {
+        const cv = $('cv-circ'); if (!cv) return;
+        const cw = cv.clientWidth || 600, narrow = cw < 560, N = 8, r = M.rng(11);
+        const c = Array.from({ length: N }, () => M.gauss(r)), x = Array.from({ length: N }, () => M.gauss(r));
+        const Wg = Array.from({ length: N }, () => Array.from({ length: N }, () => M.gauss(r)));
+        const C = M.circulant(c), err = Math.max(...M.matVec(C, x).map((v, i) => Math.abs(v - M.circApplyFFT(c, x)[i]))), mz = M.mziCount(N);
+        const px0 = Math.max(10, Math.min(13, cw / 58)), pw0 = narrow ? cw - 16 : (cw - 32) / 2;
+        const s0 = Math.min(pw0 * 0.42, 150), ph = px0 + 12 + Math.max(s0, 4 * (px0 + 6)) + 70 + 2 * (px0 + 6);
+        const { g, w, h } = window.fopCanvas(cv, (narrow ? 2 * ph + 16 : ph) / cw), px = font(g, w);
+        const pw = narrow ? w - 16 : (w - 32) / 2, s = Math.min(pw * 0.42, 150);
+        const heat = (Mx, x0, y0) => {
+            let mx = 0; Mx.forEach(row => row.forEach(v => { mx = Math.max(mx, Math.abs(v)); }));
+            const cs = s / N;
+            Mx.forEach((row, i) => row.forEach((v, j) => {
+                g.globalAlpha = 0.15 + 0.85 * Math.abs(v) / mx; g.fillStyle = v >= 0 ? col('teal') : col('orange');
+                g.fillRect(x0 + j * cs, y0 + i * cs, cs - 1, cs - 1);
+            }));
+            g.globalAlpha = 1; g.strokeStyle = col('border'); g.strokeRect(x0, y0, s, s);
+        };
+        const lens = (cx, cy, hh) => { g.strokeStyle = col('teal'); g.lineWidth = 1.5; g.beginPath(); g.ellipse(cx, cy, 5, hh, 0, 0, 2 * Math.PI); g.stroke(); };
+        const panel = (x0, y0, which) => {
+            const lx = x0 + s + 14, tw = pw - s - 14;
+            if (which === 0) {
+                txt(g, 'circulant W: each row a shift', x0, y0 + px, col('acc'));
+                heat(C, x0, y0 + px + 10);
+                const lines = ['N = 8 numbers define', 'all 64 entries', '', `max |Wx − 4f(x)|`, `= ${err.toExponential(1)}`];
+                lines.forEach((t, i) => txt(g, t, lx, y0 + px + 10 + (i + 1) * (px + 6), i >= 3 ? col('acc') : col('sec')));
+                // the 4f picture: input, lens, mask, lens, output
+                const yb = y0 + px + 10 + Math.max(s, 4 * (px + 6)) + 34, x1 = x0 + 8, x2 = x0 + pw - 8;
+                line(g, [[x1, yb], [x2, yb]], col('sec'), 1);
+                lens(x1 + (x2 - x1) * 0.25, yb, 22); lens(x1 + (x2 - x1) * 0.75, yb, 22);
+                g.fillStyle = col('amber'); g.fillRect(x1 + (x2 - x1) * 0.5 - 4, yb - 22, 8, 44);
+                txt(g, 'x', x1, yb - 8, col('text')); txt(g, 'Wx', x2, yb - 8, col('text'), 'right');
+                txt(g, 'lens', x1 + (x2 - x1) * 0.25, yb + 36, col('teal'), 'center'); txt(g, 'mask: 8 values', x1 + (x2 - x1) * 0.5, yb + 36, col('amber'), 'center'); txt(g, 'lens', x1 + (x2 - x1) * 0.75, yb + 36, col('teal'), 'center');
+                txt(g, '4f + mask: Fourier optics', x0, yb + 36 + px + 10, col('teal'));
+            } else {
+                txt(g, 'general W: learned, any values', x0, y0 + px, col('acc'));
+                heat(Wg, x0, y0 + px + 10);
+                const lines = ['W = U Σ V*', `${N}×${N} = ${N * N} values`, '', `2 meshes × ${mz.perUnitary} MZIs`, `+ ${mz.attenuators} attenuators`];
+                lines.forEach((t, i) => txt(g, t, lx, y0 + px + 10 + (i + 1) * (px + 6), i >= 3 ? col('acc') : col('sec')));
+                // a rectangular (Clements) mesh: columns of 2x2 couplers on alternating pairs, twice, with attenuators between
+                const yb = y0 + px + 10 + Math.max(s, 4 * (px + 6)) + 12, x1 = x0 + 8, x2 = x0 + pw - 8, gap = 40 / (N - 1);
+                for (let k = 0; k < N; k++) line(g, [[x1, yb + k * gap], [x2, yb + k * gap]], col('sec'), 0.8);
+                const cols = 2 * N + 1, dx = (x2 - x1 - 20) / cols;
+                for (let cI = 0; cI < cols; cI++) {
+                    const xc = x1 + 10 + (cI + 0.5) * dx;
+                    if (cI === N) { for (let k = 0; k < N; k++) { g.fillStyle = col('amber'); g.fillRect(xc - 3, yb + k * gap - 2, 6, 4); } continue; }
+                    for (let k = (cI % 2); k + 1 < N; k += 2) { g.strokeStyle = col('blue'); g.lineWidth = 1.2; g.beginPath(); g.moveTo(xc - dx * 0.35, yb + k * gap); g.lineTo(xc + dx * 0.35, yb + (k + 1) * gap); g.moveTo(xc - dx * 0.35, yb + (k + 1) * gap); g.lineTo(xc + dx * 0.35, yb + k * gap); g.stroke(); }
+                }
+                txt(g, 'V* mesh', x1 + (x2 - x1) * 0.22, yb + 40 + px + 6, col('blue'), 'center'); txt(g, 'Σ', x1 + 10 + (N + 0.5) * dx, yb + 40 + px + 6, col('amber'), 'center'); txt(g, 'U mesh', x1 + (x2 - x1) * 0.78, yb + 40 + px + 6, col('blue'), 'center');
+                txt(g, 'MZI mesh: programmable, not FO', x0, yb + 36 + 22 + px + 10, col('blue'));
+            }
+        };
+        panel(8, 4, 0);
+        if (narrow) panel(8, 4 + ph + 12, 1); else panel(24 + pw, 4, 1);
+        window.fopFig.circ = { err, mesh: mz };
+    }
+    if ($('cv-circ')) { drawCirc(); redraws.push(drawCirc); }
 
     let rt = 0;
     window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => redraws.forEach(f => f()), 150); });
