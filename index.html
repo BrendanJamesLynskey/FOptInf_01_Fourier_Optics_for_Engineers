@@ -1725,36 +1725,37 @@
     <div class="slide-number">12</div>
     <h2>What Optics Gives and What It Costs</h2>
     <div class="fig">
-        <svg class="wide-only" viewBox="0 0 600 210" role="img" aria-label="A balance: on one side what optics gives (a transform with no operation count, parallelism, a free convolution), on the other what it costs (conversions, precision, mask rewrites, phase, static power)">
+        <svg class="wide-only" viewBox="0 0 600 210" role="img" aria-label="A balance: on one side what optics gives (a transform with no operation count; wide 2-D frames in free space; a GHz clock in a pluggable module on a chip), on the other what it costs (conversions, precision, fixed or slow weights, static power)">
             <path d="M300 40 L300 190 M240 190 H360" class="s-line" style="stroke-width: 3"/>
             <path d="M80 60 L520 40" class="s-line" style="stroke-width: 3"/>
             <circle cx="300" cy="50" r="6" style="fill: var(--text-secondary)"/>
             <path d="M80 60 L40 110 M80 60 L120 110 M520 40 L480 90 M520 40 L560 90" class="s-line"/>
-            <rect class="s-acc" x="8" y="110" width="180" height="92" rx="6"/><text class="s-a" x="18" y="132">gives</text><text class="s-d" x="18" y="152">transform in flight</text><text class="s-d" x="18" y="170">parallel 1-D or 2-D</text><text class="s-d" x="18" y="188">convolution via a mask</text>
-            <rect class="s-box" x="404" y="90" width="190" height="112" rx="6" style="stroke: var(--c-orange)"/><text x="414" y="112" style="fill: var(--c-orange); font-size: 14px">costs</text><text class="s-d" x="414" y="132">a DAC + ADC per value</text><text class="s-d" x="414" y="150">analogue precision</text><text class="s-d" x="414" y="168">mask rewrites, phase</text><text class="s-d" x="414" y="186">static power</text>
+            <rect class="s-acc" x="8" y="110" width="180" height="92" rx="6"/><text class="s-a" x="18" y="132">gives</text><text class="s-d" x="18" y="152">transform in flight</text><text class="s-d" x="18" y="170">free space: wide, 2-D</text><text class="s-d" x="18" y="188">chip: GHz, in a module</text>
+            <rect class="s-box" x="404" y="90" width="190" height="112" rx="6" style="stroke: var(--c-orange)"/><text x="414" y="112" style="fill: var(--c-orange); font-size: 14px">costs</text><text class="s-d" x="414" y="132">a DAC + ADC per value</text><text class="s-d" x="414" y="150">analogue precision</text><text class="s-d" x="414" y="168">fixed or slow weights</text><text class="s-d" x="414" y="186">static power</text>
         </svg>
-        <svg class="narrow-only" viewBox="0 0 300 250" role="img" aria-label="A balance tipped towards the costs: conversions, precision, mask rewrites, phase and static power, against the gains">
+        <svg class="narrow-only" viewBox="0 0 300 250" role="img" aria-label="A balance tipped towards the costs: conversions, precision, fixed or slow weights and static power, against the gains: a transform by time of flight, wide 2-D in free space, a GHz clock on a chip">
             <path d="M150 30 V240 M110 240 H190" class="s-line" style="stroke-width: 3"/>
             <path d="M40 50 L260 26" class="s-line" style="stroke-width: 3"/><circle cx="150" cy="38" r="5" style="fill: var(--text-secondary)"/>
             <path d="M40 50 L20 80 M40 50 L60 80 M260 26 L240 56 M260 26 L280 56" class="s-line"/>
-            <rect class="s-acc" x="4" y="84" width="138" height="120" rx="6"/><text class="s-a" x="12" y="104">gives</text><text class="s-d" x="12" y="124">transform by</text><text class="s-d" x="12" y="140">time of flight</text><text class="s-d" x="12" y="160">parallel 1-D</text><text class="s-d" x="12" y="176">or 2-D</text><text class="s-d" x="12" y="196">mask convolves</text>
-            <rect class="s-box" x="158" y="60" width="138" height="150" rx="6" style="stroke: var(--c-orange)"/><text x="166" y="80" style="fill: var(--c-orange); font-size: 14px">costs</text><text class="s-d" x="166" y="100">DAC + ADC</text><text class="s-d" x="166" y="116">per value</text><text class="s-d" x="166" y="136">precision</text><text class="s-d" x="166" y="156">mask rewrites</text><text class="s-d" x="166" y="176">phase</text><text class="s-d" x="166" y="196">static power</text>
+            <rect class="s-acc" x="4" y="84" width="138" height="146" rx="6"/><text class="s-a" x="12" y="104">gives</text><text class="s-d" x="12" y="122">transform by</text><text class="s-d" x="12" y="138">time of flight</text><text class="s-d" x="12" y="158">free space:</text><text class="s-d" x="12" y="174">wide, 2-D</text><text class="s-d" x="12" y="194">chip: GHz,</text><text class="s-d" x="12" y="210">in a module</text>
+            <rect class="s-box" x="158" y="60" width="138" height="150" rx="6" style="stroke: var(--c-orange)"/><text x="166" y="80" style="fill: var(--c-orange); font-size: 14px">costs</text><text class="s-d" x="166" y="100">DAC + ADC</text><text class="s-d" x="166" y="116">per value</text><text class="s-d" x="166" y="136">precision</text><text class="s-d" x="166" y="156">fixed or slow</text><text class="s-d" x="166" y="172">weights</text><text class="s-d" x="166" y="196">static power</text>
         </svg>
-        <p class="fig-cap">The costs side is heavier unless each converted value is reused by many operations and the engine is kept busy.</p>
+        <p class="fig-cap">The costs side is heavier unless each converted value is reused by many operations and the engine is kept busy. The two builds trade differently: free space is wide but slow to change; a chip is fast but narrow and fixed.</p>
     </div>
     <div class="table-wrap">
     <table>
-        <tr><th>Property</th><th>Free-space 4f engine</th><th>What it means for a workload</th></tr>
-        <tr><td>Transform cost</td><td>Time of flight; no operation count</td><td>Long transforms are as cheap as short ones, once the data is in</td></tr>
-        <tr><td>Parallelism</td><td>Millions of pixels; many 1-D transforms per frame</td><td>Wants batches of independent transforms (channels, sequences)</td></tr>
-        <tr><td>Precision</td><td>Analogue; this series assumes about 8 effective bits (illustrative)</td><td>Fine for FP8/INT8-like error, short of BF16 without averaging; exact integer arithmetic only for small blocks</td></tr>
-        <tr><td>Conversions</td><td>One DAC sample in and one ADC sample out per value, energy &prop; 2<sup>ENOB</sup></td><td>Needs many operations per converted value to pay</td></tr>
-        <tr><td>Weights</td><td>On the Fourier-plane mask, rewritten at the SLM's frame rate</td><td>Wants weights held across a batch: prefill, not token-by-token decode</td></tr>
-        <tr><td>Signs and phase</td><td>Lost at a square-law detector unless detected coherently</td><td>Coherent detection, or twice the passes</td></tr>
-        <tr><td>Static power</td><td>Lasers, tuning, drivers</td><td>Must be kept busy</td></tr>
+        <tr><th>Property</th><th>Free-space 4f engine</th><th>On-chip, as in the link module (<a href="#slide-08c">08c</a>)</th><th>What it means for a workload</th></tr>
+        <tr><td>Transform cost</td><td>Time of flight; no operation count</td><td>Time of flight too (picoseconds across the chip); the size is fixed by the waveguides, larger transforms by decomposition (the module's FHE run: 256-point pieces)</td><td>Long transforms are as cheap as short ones, once the data is in; on a chip, only up to the device's size per pass</td></tr>
+        <tr><td>Parallelism and rate</td><td>Millions of pixels; many 1-D transforms per frame, frames at the SLM's rate</td><td>Tens to hundreds of waveguides, 1-D; a new vector per modulator symbol (14 GBaud, four channels in the module); WDM could multiply it</td><td>Free space wants batches of independent transforms; a chip wants a fast stream of small ones, such as data passing through a link</td></tr>
+        <tr><td>Precision</td><td>Analogue; this series assumes about 8 effective bits (illustrative)</td><td>Analogue; not reported for the module, which takes binary (NRZ) input and adds error correction (bit planes, <a href="#slide-10b">10b</a>)</td><td>Fine for FP8/INT8-like error, short of BF16 without averaging; exact integer arithmetic only for small blocks or by bit planes</td></tr>
+        <tr><td>Conversions</td><td>One DAC sample in and one ADC sample out per value, energy &prop; 2<sup>ENOB</sup></td><td>A modulator symbol in and a detector read-out per value; binary input needs only 1-bit drivers, but one pass per bit plane</td><td>Needs many operations per converted value to pay</td></tr>
+        <tr><td>Weights</td><td>On the Fourier-plane mask, rewritten at the SLM's frame rate</td><td>A passive diffractive device is fixed when it is made: one transform, no mask; a fixed band means reading only some outputs (<a href="#slide-08e">08e</a>). Learned weights need a programmable mesh or the digital side</td><td>Free space wants weights held across a batch (prefill, not decode); a passive chip suits a transform that never changes</td></tr>
+        <tr><td>Signs and phase</td><td>Lost at a square-law detector unless detected coherently</td><td>Balanced photodiodes: coherent detection, built in</td><td>Coherent detection, or twice the passes</td></tr>
+        <tr><td>Static power</td><td>Lasers, tuning, drivers</td><td>Laser, modulator drivers, detectors and TIAs: 9.7 W for the module (the host FPGA card is extra)</td><td>Must be kept busy</td></tr>
+        <tr><td>Size</td><td>A bench of lenses, SLM and camera, kept aligned</td><td>Fits a QSFP56 pluggable, in the data path</td><td>Only the chip sits where the data already flows</td></tr>
     </table>
     </div>
-    <p>The sister series applied the same accounting to FHE, where exact modular arithmetic made the precision tax severe (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-10">FHESim 04, &ldquo;When It Wins and When It Loses&rdquo;</a>). Deck 02 applies it to LLM inference.</p>
+    <p>For Compute in Transit the on-chip column is the one that matters: its transform is fixed and fast, so it suits operations that never change, such as a fixed frequency band, and not data-dependent choices or learned weights. The sister series applied the same accounting to FHE, where exact modular arithmetic made the precision tax severe (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-10">FHESim 04, &ldquo;When It Wins and When It Loses&rdquo;</a>). Deck 02 applies it to LLM inference.</p>
 </section>
 
 <section class="slide" id="slide-12b">
