@@ -923,7 +923,7 @@
 <section class="slide" id="slide-01">
     <div class="slide-number">01</div>
     <h2>Why Fourier Optics, and Why Now</h2>
-    <p>A lens performs a two-dimensional Fourier transform on a light field as the light propagates through it. Every pixel of the transform is produced at once, by physics rather than by arithmetic, so the transform has no O(n log n) operation count, only the cost of getting data into and out of the light. That asymmetry is the whole story of this series.</p>
+    <p>A lens performs a two-dimensional Fourier transform on a light field as the light propagates through it. Every pixel of the transform is produced at once, by physics rather than by arithmetic, so the transform has no O(n log n) operation count, only the cost of getting data into and out of the light. On a chip the same physics works in one dimension: light spreading through a slab, or a fixed mesh of couplers, transforms the values on its input waveguides (<a href="#slide-08b">slide 08b</a>). That asymmetry is the whole story of this series.</p>
     <div class="fig">
         <svg class="wide-only" viewBox="0 0 600 190" role="img" aria-label="Where the cost sits: converters and modulators at the edges are paid per value; the optics in the middle has no operation count">
             <rect class="s-box" x="6" y="40" width="112" height="70" rx="6"/><text class="s-t" x="18" y="66">digital in</text><text class="s-d" x="18" y="86">DAC + driver</text><text class="s-d" x="18" y="102">per value</text>
@@ -953,8 +953,8 @@
         <div class="diagram-panel accent-border">
             <h4>What it offers</h4>
             <ul>
-                <li><strong>Massive parallelism:</strong> a megapixel field is transformed in one pass.</li>
-                <li><strong>A free convolution:</strong> two lenses and a mask (the 4f system, <a href="#slide-03">slide 03</a>) multiply in the frequency domain.</li>
+                <li><strong>Parallelism or speed:</strong> in free space a megapixel field is transformed in one pass; on a chip a new vector enters every modulator symbol, at GHz rates (<a href="#slide-08b">slide 08b</a>).</li>
+                <li><strong>A free convolution:</strong> two lenses and a mask (the 4f system, <a href="#slide-03">slide 03</a>) multiply in the frequency domain; on a chip the multiply needs modulators between two transforms (<a href="#slide-12b">slide 12b</a>).</li>
                 <li><strong>Low energy per operation</strong> inside the optics; the bill is paid at the edges (<a href="#slide-11">slide 11</a>).</li>
             </ul>
         </div>
@@ -1323,7 +1323,7 @@
             <h4>Coherent (a laser)</h4>
             <ul>
                 <li>Fields add as <strong>complex amplitudes</strong>: two beams can cancel. Values can be signed or complex, encoded in amplitude and phase.</li>
-                <li>The lens transforms the <em>field</em>, so the 4f system computes a true complex convolution.</li>
+                <li>The lens, or an on-chip transform, acts on the <em>field</em>, so the 4f system computes a true complex convolution.</li>
                 <li>Costs: a stable laser, phase-accurate modulators, alignment, and speckle and coherent noise from every stray reflection.</li>
             </ul>
         </div>
@@ -1376,7 +1376,7 @@
     </div>
     <ul>
         <li><strong>The trade:</strong> free-space SLMs have millions of pixels but kHz-or-slower updates; integrated modulators run at GHz but have few channels. Throughput is pixels &times; rate either way, and the converters behind every pixel set the energy.</li>
-        <li><strong>The mask is a weight store.</strong> A filter that changes every pass is limited by the mask's update rate; a filter held for many passes (a weight, reused across a batch) is nearly free. Deck 02 turns this into a count of mask rewrites per forward pass.</li>
+        <li><strong>The mask is a weight store.</strong> A filter that changes every pass is limited by the mask's update rate; a filter held for many passes (a weight, reused across a batch) is nearly free. Deck 02 turns this into a count of mask rewrites per forward pass. A passive on-chip transform has no mask at all: its transform is fixed when it is made, and any filter values must go on modulators at the electrical clock.</li>
         <li>Rates and pixel counts move quickly with products; treat these as orders of magnitude and check the device datasheet. Sources: Miscuglio et al. (<a href="https://arxiv.org/abs/2008.05853">arXiv:2008.05853</a>), Feldmann et al. (<a href="https://arxiv.org/abs/2002.00281">arXiv:2002.00281</a>; <a href="https://doi.org/10.1038/s41586-020-03070-1">Nature 589, 2021</a>).</li>
     </ul>
 </section>
@@ -1384,7 +1384,7 @@
 <section class="slide" id="slide-07">
     <div class="slide-number">07</div>
     <h2>Detectors and the Phase Problem</h2>
-    <p>Photodetectors are <strong>square-law</strong>: they measure intensity |E|<sup>2</sup>, not the field E. A coherent 4f system computes a signed or complex field, and the detector throws away its sign and phase. Four remedies:</p>
+    <p>Photodetectors are <strong>square-law</strong>: they measure intensity |E|<sup>2</sup>, not the field E. A coherent 4f system, or an on-chip transform, computes a signed or complex field, and the detector throws away its sign and phase. Four remedies:</p>
     <div class="fig">
         <canvas id="fig-square" aria-label="A signed field E and its negative minus E give the same detected intensity"></canvas>
         <p class="fig-cap">Top: a signed field E across the detector (solid) and a different field, &minus;E (dashed). Bottom: what square-law pixels read, |E|&sup2;: identical for both. Sign and phase are gone before the ADC sees anything.</p>
@@ -1676,7 +1676,7 @@
     <div class="fig" id="anim-planes">
         <div class="control-row"><label for="bp-sigma">Readout noise &sigma; (output units)</label><input type="range" id="bp-sigma" min="0.05" max="1" step="0.05" value="0.15"><span class="val" id="bp-sigma-val">0.15</span></div>
         <canvas id="cv-planes" aria-label="Bit-plane animation: eight 8-bit values split into planes; each plane is convolved with an integer kernel, read with noise and rounded, weighted by 2 to the b and accumulated; the result is compared with the exact convolution and reduced mod 257"></canvas>
-        <p class="fig-cap">Eight 8-bit inputs, a known integer transform (cyclic convolution with kernel h = [3, 1, 4, 1, 5, 9, 2, 6], which a 4f system or an FFT computes), and Gaussian readout noise &sigma; per plane (<code>bitPlaneRun</code>). Each plane's outputs are integers from 0 to &Sigma;h = 31, so rounding them needs only about 5 bits of clean readout, while the full result spans 13 bits. As &sigma; grows towards a quarter of an output unit, rounding starts to fail and the recombined result is wrong; the panel counts the wrong outputs.</p>
+        <p class="fig-cap">Eight 8-bit inputs, a known integer transform (cyclic convolution with kernel h = [3, 1, 4, 1, 5, 9, 2, 6], which a 4f system, a pair of on-chip transforms with modulators between them, or an FFT computes), and Gaussian readout noise &sigma; per plane (<code>bitPlaneRun</code>). Each plane's outputs are integers from 0 to &Sigma;h = 31, so rounding them needs only about 5 bits of clean readout, while the full result spans 13 bits. As &sigma; grows towards a quarter of an output unit, rounding starts to fail and the recombined result is wrong; the panel counts the wrong outputs.</p>
     </div>
     <div class="callout">
         <div class="callout-label"><span class="src-tag inference">inference</span> &nbsp;not stated in the paper</div>
@@ -1710,7 +1710,7 @@
             <ul>
                 <li><strong>Lasers</strong> burn power whether or not work arrives; wall-plug efficiency sets the electrical cost.</li>
                 <li><strong>Thermal tuning</strong> holds resonant and interferometric devices on wavelength.</li>
-                <li><strong>SLM drivers</strong> and their frame buffers.</li>
+                <li><strong>SLM drivers</strong> and their frame buffers in free space; <strong>modulator drivers and TIAs</strong> on a chip.</li>
                 <li>Static power must be amortised over work: an idle optical engine is pure cost. This is energy proportionality, from the sister series (<a href="https://brendanjameslynskey.github.io/InfSim_07_Power_and_Energy/#slide-08">LLM Inference Simulators 07, &ldquo;Energy Proportionality: Static Power and Load&rdquo;</a>).</li>
             </ul>
         </div>
@@ -1801,10 +1801,10 @@
     <div class="slide-number">13</div>
     <h2>What to Take Away</h2>
     <div class="fig map">
-        <svg class="wide-only" viewBox="0 0 600 200" role="img" aria-label="The signal path of the whole deck in one line: data in, modulator, lens and Fourier plane, detector, ADC and digital logic, each with its lesson">
+        <svg class="wide-only" viewBox="0 0 600 200" role="img" aria-label="The signal path of the whole deck in one line: data in, modulator, a transform (a lens or a chip) and a fixed band, detector, ADC and digital logic, each with its lesson">
             <a href="#slide-06"><rect class="s-box" x="6" y="20" width="104" height="64" rx="6"/><text class="s-t" x="16" y="46">modulate</text><text class="s-d" x="16" y="66">pay per value</text></a>
-            <a href="#slide-02b"><rect class="s-acc" x="128" y="20" width="104" height="64" rx="6"/><text class="s-a" x="138" y="46">lens</text><text class="s-d" x="138" y="66">x = &lambda; f u</text></a>
-            <a href="#slide-08e"><rect class="s-box" x="250" y="20" width="104" height="64" rx="6"/><text class="s-t" x="260" y="46">mask</text><text class="s-d" x="260" y="66">fixed: free</text></a>
+            <a href="#slide-02b"><rect class="s-acc" x="128" y="20" width="104" height="64" rx="6"/><text class="s-a" x="138" y="46">transform</text><text class="s-d" x="138" y="66">lens or chip</text></a>
+            <a href="#slide-08e"><rect class="s-box" x="250" y="20" width="104" height="64" rx="6"/><text class="s-t" x="260" y="46">band</text><text class="s-d" x="260" y="66">fixed: free</text></a>
             <a href="#slide-07b"><rect class="s-box" x="372" y="20" width="104" height="64" rx="6"/><text class="s-t" x="382" y="46">detect</text><text class="s-d" x="382" y="66">|E|&sup2; or I/Q</text></a>
             <a href="#slide-10b"><rect class="s-box" x="494" y="20" width="100" height="64" rx="6"/><text class="s-t" x="504" y="46">digital</text><text class="s-d" x="504" y="66">round, mod</text></a>
             <path class="s-line" d="M110 52 H124 M232 52 H246 M354 52 H368 M476 52 H490"/>
@@ -1812,24 +1812,24 @@
             <text class="s-d" x="320" y="122">fibre: bits in time, one mode;</text><text class="s-d" x="320" y="140">filter before the wire, not on it</text>
             <path d="M6 170 H594" style="stroke: var(--c-orange); stroke-width: 5"/><text x="6" y="192" style="fill: var(--c-orange); font-size: 12px">the bill: conversions and static power, paid at the edges</text>
         </svg>
-        <svg class="narrow-only" viewBox="0 0 300 338" role="img" aria-label="The deck's signal path top to bottom: modulate, lens, mask, detect, digital, with the bill paid at the edges">
+        <svg class="narrow-only" viewBox="0 0 300 338" role="img" aria-label="The deck's signal path top to bottom: modulate, transform (lens or chip), band, detect, digital, with the bill paid at the edges">
             <a href="#slide-06"><rect class="s-box" x="4" y="4" width="292" height="44" rx="6"/><text class="s-t" x="14" y="31">modulate</text><text class="s-d" x="140" y="31">pay per value</text></a>
-            <a href="#slide-02b"><rect class="s-acc" x="4" y="58" width="292" height="44" rx="6"/><text class="s-a" x="14" y="85">lens</text><text class="s-d" x="140" y="85">x = &lambda; f u</text></a>
-            <a href="#slide-08e"><rect class="s-box" x="4" y="112" width="292" height="44" rx="6"/><text class="s-t" x="14" y="139">mask</text><text class="s-d" x="140" y="139">fixed: free</text></a>
+            <a href="#slide-02b"><rect class="s-acc" x="4" y="58" width="292" height="44" rx="6"/><text class="s-a" x="14" y="85">transform</text><text class="s-d" x="140" y="85">lens or chip</text></a>
+            <a href="#slide-08e"><rect class="s-box" x="4" y="112" width="292" height="44" rx="6"/><text class="s-t" x="14" y="139">band</text><text class="s-d" x="140" y="139">fixed: free</text></a>
             <a href="#slide-07b"><rect class="s-box" x="4" y="166" width="292" height="44" rx="6"/><text class="s-t" x="14" y="193">detect</text><text class="s-d" x="140" y="193">|E|&sup2; or I/Q</text></a>
             <a href="#slide-10b"><rect class="s-box" x="4" y="220" width="292" height="44" rx="6"/><text class="s-t" x="14" y="247">digital</text><text class="s-d" x="140" y="247">round, mod</text></a>
             <path d="M4 290 H296" style="stroke: var(--c-orange); stroke-width: 5"/><text x="4" y="312" style="fill: var(--c-orange); font-size: 12px">the bill: conversions and static</text><text x="4" y="328" style="fill: var(--c-orange); font-size: 12px">power, paid at the edges</text>
         </svg>
     </div>
     <ul>
-        <li><strong>A lens is a Fourier transformer; two lenses and a mask are a convolver.</strong> The transform is free; the mask holds the weights. The spectrum sits one focal length behind the lens, at x = &lambda;fu, so the light must be one wavelength and collimated (<a href="#slide-02b">02b</a>, <a href="#slide-02c">02c</a>).</li>
+        <li><strong>A lens is a Fourier transformer; two lenses and a mask are a convolver.</strong> The transform is free; the mask holds the weights. The spectrum sits one focal length behind the lens, at x = &lambda;fu, so the light must be one wavelength and collimated (<a href="#slide-02b">02b</a>, <a href="#slide-02c">02c</a>). That is the free-space picture; the chip version follows.</li>
         <li><strong>FFT convolution is circular</strong> unless zero-padded to twice the length, which is what makes it causal (the interactive, <a href="#slide-04">slide 04</a>).</li>
         <li><strong>Detectors see intensity:</strong> sign and phase need coherent detection, a bias, split passes or retrieval. Balanced photodiodes against a local oscillator read the real and imaginary parts directly; a pixelated detector reads a DFT whose DC term eats the dynamic range (<a href="#slide-07b">07b</a>).</li>
-        <li><strong>On a chip the transform is 1-D</strong>: a slab lens samples a continuous transform, a butterfly mesh computes an exact DFT; throughput is the modulator clock times the channels (<a href="#slide-08b">08b</a>). A real link module does it with four binary-input channels and coherent detection, and reports no precision, latency or energy per operation (<a href="#slide-08c">08c</a>).</li>
+        <li><strong>On a chip the transform is 1-D</strong>: a slab lens samples a continuous transform, a butterfly mesh computes an exact DFT; throughput is the modulator clock times the channels (<a href="#slide-08b">08b</a>). A real link module does it with four binary-input channels and coherent detection, and reports no precision, latency or energy per operation (<a href="#slide-08c">08c</a>). Its passive transform is fixed and has no mask: a fixed band is chosen by which outputs are read, and a multiply needs modulators between two transforms, or the digital side (<a href="#slide-12b">12b</a>).</li>
         <li><strong>The fibre is a different domain:</strong> its spectrum is the bits', so filtering it causes inter-symbol interference; to save link time, transform and keep the band before the wire. A fixed band is a free mask, top-k a digital decision (<a href="#slide-08d">08d</a>, <a href="#slide-08e">08e</a>).</li>
         <li><strong>Float workloads need a noise level, not exactness:</strong> about 8.0 ENOB for INT8-like error and 10.3 for BF16-like; averaging buys bits at 4&times; passes per bit, and digit planes do not help. Exact integer results are a different game: binary planes need only be read well enough to round (<a href="#slide-10b">10b</a>, an inference).</li>
-        <li><strong>Conversions and static power are the bill.</strong> Optics pays only when each converted value is reused by many operations and the engine is kept busy.</li>
-        <li><strong>A transformer layer is mostly learned matmuls and nonlinear steps, not transforms.</strong> A lens is one fixed linear map: it helps only circulant weights (speculative) or Fourier-mixing layers (a small share); general matmul needs a programmable mesh, which is not Fourier optics; and every nonlinear step forces a conversion out and back (<a href="#slide-12b">12b</a>).</li>
+        <li><strong>Conversions and static power are the bill.</strong> Optics pays only when each converted value is reused by many operations and the engine is kept busy. Free space is wide but slow to change; a chip is fast but narrow and fixed (<a href="#slide-12">12</a>).</li>
+        <li><strong>A transformer layer is mostly learned matmuls and nonlinear steps, not transforms.</strong> Fourier optics, by lens or on a chip, is one fixed linear map: it helps only circulant weights (speculative) or Fourier-mixing layers (a small share); general matmul needs a programmable mesh, which is not Fourier optics; and every nonlinear step forces a conversion out and back (<a href="#slide-12b">12b</a>).</li>
         <li><strong>Next:</strong> <a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/">deck 02</a> asks where LLM inference has transforms to offer, and how much of the work they are.</li>
     </ul>
 </section>
