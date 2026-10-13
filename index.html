@@ -801,13 +801,14 @@
 <header class="hero">
     <div class="series-label">Fourier Optics for Inference &mdash; Presentation 01</div>
     <h1><span class="accent">Fourier Optics</span> for Engineers</h1>
-    <p class="subtitle">How a lens computes a Fourier transform and a 4f system a convolution, in one pass of light; coherent and incoherent light, spatial light modulators, detectors and the phase problem, integrated-photonic alternatives; and the precision and energy bill: ENOB, noise, passes, and the converters around the optics.</p>
+    <p class="subtitle">How a lens computes a Fourier transform and a 4f system a convolution, in one pass of light: where the Fourier plane is, how the pattern scales with wavelength and why the light must be coherent; spatial light modulators, what a pixelated detector reads, and coherent (balanced) detection; on-chip slab lenses and butterfly meshes, and a photonic link module's signal path, its binary bit planes and the fibre's own spectrum; and the precision and energy bill: ENOB, noise, passes, and the converters around the optics. Every concept has a figure, and every mechanism an animation driven by a tested model.</p>
 
     <div class="tags">
         <span class="tag">4f system</span>
         <span class="tag">Convolution theorem</span>
-        <span class="tag">SLMs</span>
-        <span class="tag">Phase problem</span>
+        <span class="tag">Coherent detection</span>
+        <span class="tag">Photonic link module</span>
+        <span class="tag">Bit planes</span>
         <span class="tag">ENOB</span>
         <span class="tag">Conversion energy</span>
     </div>
@@ -825,27 +826,94 @@
     </div>
 </header>
 
+<style>
+    /* FOptInf 01 figures: extra hues on the Walnut palette (dark theme), used through variables only */
+    :root { --c-teal: #97cdc6; --c-amber: #e3b174; --c-orange: #de805a; --c-blue: #8fb4e3; --c-violet: #c3a6dd; }
+    .fig { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; margin: 1.1rem 0; }
+    .fig canvas { display: block; width: 100%; }
+    .fig svg { display: block; width: 100%; height: auto; }
+    .fig svg text { font-family: var(--font-mono); }
+    .fig-cap { font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-secondary); margin: 0.45rem 0 0; line-height: 1.45; }
+    .fig-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.8rem; }
+    .fig-row > * { min-width: 0; }
+    .fig .control-row { margin: 0.4rem 0; }
+    .fig .control-row label { min-width: 0; }
+    .anim-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 0.55rem; }
+    .anim-controls .btn { min-height: 44px; min-width: 44px; }
+    .anim-controls input[type="range"] { flex: 1 1 120px; min-width: 0; accent-color: var(--accent); min-height: 44px; }
+    .anim-controls select { background: var(--bg-code); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px; min-height: 44px; font-family: var(--font-mono); font-size: 0.8rem; }
+    .anim-count { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); }
+    .anim-caption { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-primary); background: var(--bg-code); border-left: 3px solid var(--accent); padding: 0.45rem 0.7rem; margin: 0.5rem 0 0; min-height: 3.2em; }
+    .anim:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .src-tag { font-family: var(--font-mono); font-size: 0.68rem; border: 1px solid var(--border); border-radius: 999px; padding: 0 0.45rem; color: var(--text-secondary); white-space: nowrap; }
+    .src-tag.paper { border-color: var(--c-teal); color: var(--c-teal); }
+    .src-tag.web { border-color: var(--c-amber); color: var(--c-amber); }
+    .src-tag.derived { border-color: var(--c-violet); color: var(--c-violet); }
+    .src-tag.inference { border-color: var(--c-orange); color: var(--c-orange); }
+    .eq { text-align: center; font-family: var(--font-mono); font-size: 0.95rem; color: var(--accent); margin: 0.5rem 0; }
+    .map a { text-decoration: none; }
+    .map a:hover rect, .map a:focus rect { stroke: var(--accent); stroke-width: 2.5; }
+    .s-box { fill: var(--bg-code); stroke: var(--border); stroke-width: 1.2; }
+    .s-acc { fill: var(--accent-dim); stroke: var(--accent); stroke-width: 1.5; }
+    .s-t { fill: var(--text-primary); font-size: 14px; }
+    .s-d { fill: var(--text-secondary); font-size: 12px; }
+    .s-a { fill: var(--accent); font-size: 14px; }
+    .s-line { stroke: var(--text-secondary); stroke-width: 1.5; fill: none; }
+    .s-wave { stroke: var(--c-teal); stroke-width: 2; fill: none; }
+    #slide-00 .contents-list li::before { content: attr(data-n); min-width: 2.4rem; }   /* show the slide's own id (02b, 08c ...) */
+    .narrow-only { display: none; }
+    @media (max-width: 640px) { .fig { padding: 0.45rem; } .anim-caption { font-size: 0.74rem; }
+        .fig svg.wide-only, .fig .wide-only { display: none; } .fig svg.narrow-only, .fig .narrow-only { display: block; } }
+</style>
+
 <section class="slide" id="slide-00">
     <div class="slide-number">00</div>
     <h2>Topics We'll Cover</h2>
+    <div class="fig map">
+        <svg class="wide-only" viewBox="0 0 600 250" role="img" aria-label="Map of the deck: the physics, light and detectors, on chip and a real module, precision, and the bill">
+            <a href="#slide-02"><rect class="s-box" x="8" y="10" width="180" height="96" rx="8"/><text class="s-a" x="20" y="36">1 &middot; The physics</text><text class="s-d" x="20" y="58">lens = Fourier transform</text><text class="s-d" x="20" y="76">2f and 4f planes, scale</text><text class="s-d" x="20" y="94">slides 01&ndash;04</text></a>
+            <a href="#slide-05"><rect class="s-box" x="210" y="10" width="180" height="96" rx="8"/><text class="s-a" x="222" y="36">2 &middot; Light in, light out</text><text class="s-d" x="222" y="58">coherence, modulators</text><text class="s-d" x="222" y="76">detectors, DFT, phase</text><text class="s-d" x="222" y="94">slides 05&ndash;07b</text></a>
+            <a href="#slide-08"><rect class="s-box" x="412" y="10" width="180" height="96" rx="8"/><text class="s-a" x="424" y="36">3 &middot; On a chip</text><text class="s-d" x="424" y="58">slab lens or FFT mesh</text><text class="s-d" x="424" y="76">a real link module</text><text class="s-d" x="424" y="94">slides 08&ndash;08e</text></a>
+            <a href="#slide-09"><rect class="s-box" x="8" y="140" width="180" height="96" rx="8"/><text class="s-a" x="20" y="166">4 &middot; Precision</text><text class="s-d" x="20" y="188">ENOB and noise</text><text class="s-d" x="20" y="206">passes and bit planes</text><text class="s-d" x="20" y="224">slides 09&ndash;10b</text></a>
+            <a href="#slide-11"><rect class="s-box" x="210" y="140" width="180" height="96" rx="8"/><text class="s-a" x="222" y="166">5 &middot; The bill</text><text class="s-d" x="222" y="188">conversions, static power</text><text class="s-d" x="222" y="206">gives and costs</text><text class="s-d" x="222" y="224">slides 11&ndash;12</text></a>
+            <a href="#slide-13"><rect class="s-acc" x="412" y="140" width="180" height="96" rx="8"/><text class="s-a" x="424" y="166">Take away</text><text class="s-d" x="424" y="188">six lines</text><text class="s-d" x="424" y="224">slide 13</text></a>
+            <path class="s-line" d="M188 58 H206 M390 58 H408 M502 106 V122 H98 V136 M188 188 H206 M390 188 H408"/>
+        </svg>
+        <svg class="narrow-only" viewBox="0 0 300 340" role="img" aria-label="Map of the deck in six parts">
+            <a href="#slide-02"><rect class="s-box" x="4" y="4" width="142" height="100" rx="8"/><text class="s-a" x="14" y="28">1 &middot; Physics</text><text class="s-d" x="14" y="50">lens = FT</text><text class="s-d" x="14" y="68">2f, 4f, scale</text><text class="s-d" x="14" y="90">01&ndash;04</text></a>
+            <a href="#slide-05"><rect class="s-box" x="154" y="4" width="142" height="100" rx="8"/><text class="s-a" x="164" y="28">2 &middot; Light</text><text class="s-d" x="164" y="50">coherence, SLMs</text><text class="s-d" x="164" y="68">detectors, DFT</text><text class="s-d" x="164" y="90">05&ndash;07b</text></a>
+            <a href="#slide-08"><rect class="s-box" x="4" y="118" width="142" height="100" rx="8"/><text class="s-a" x="14" y="142">3 &middot; On a chip</text><text class="s-d" x="14" y="164">slab or mesh</text><text class="s-d" x="14" y="182">a link module</text><text class="s-d" x="14" y="204">08&ndash;08e</text></a>
+            <a href="#slide-09"><rect class="s-box" x="154" y="118" width="142" height="100" rx="8"/><text class="s-a" x="164" y="142">4 &middot; Precision</text><text class="s-d" x="164" y="164">ENOB, noise</text><text class="s-d" x="164" y="182">passes, planes</text><text class="s-d" x="164" y="204">09&ndash;10b</text></a>
+            <a href="#slide-11"><rect class="s-box" x="4" y="232" width="142" height="100" rx="8"/><text class="s-a" x="14" y="256">5 &middot; The bill</text><text class="s-d" x="14" y="278">conversions</text><text class="s-d" x="14" y="296">gives, costs</text><text class="s-d" x="14" y="318">11&ndash;12</text></a>
+            <a href="#slide-13"><rect class="s-acc" x="154" y="232" width="142" height="100" rx="8"/><text class="s-a" x="164" y="256">Take away</text><text class="s-d" x="164" y="278">six lines</text><text class="s-d" x="164" y="318">13</text></a>
+        </svg>
+    </div>
     <ul class="contents-list">
-        <li><a href="#slide-01">Why Fourier Optics, and Why Now</a></li>
-        <li><a href="#slide-02">The Lens as a Fourier Transformer</a></li>
-        <li><a href="#slide-03">The 4f System and the Convolution Theorem</a></li>
-        <li><a href="#slide-04">Interactive: FFT Convolution in 1-D and 2-D</a></li>
-        <li><a href="#slide-05">Coherent and Incoherent Light</a></li>
-        <li><a href="#slide-06">Spatial Light Modulators</a></li>
-        <li><a href="#slide-07">Detectors and the Phase Problem</a></li>
-        <li><a href="#slide-08">Integrated-Photonic Alternatives</a></li>
-        <li><a href="#slide-09">Precision: ENOB, Noise and Crosstalk</a></li>
-        <li><a href="#slide-10">Buying Precision: Passes and Planes</a></li>
-        <li><a href="#slide-11">Conversion Energy and Static Power</a></li>
-        <li><a href="#slide-12">What Optics Gives and What It Costs</a></li>
-        <li><a href="#slide-13">What to Take Away</a></li>
+        <li data-n="01"><a href="#slide-01">Why Fourier Optics, and Why Now</a></li>
+        <li data-n="02"><a href="#slide-02">The Lens as a Fourier Transformer</a></li>
+        <li data-n="02b"><a href="#slide-02b">Where the Fourier Plane Is: 2f and 4f</a></li>
+        <li data-n="02c"><a href="#slide-02c">Scale and Coherence</a></li>
+        <li data-n="03"><a href="#slide-03">The 4f System and the Convolution Theorem</a></li>
+        <li data-n="04"><a href="#slide-04">Interactive: FFT Convolution in 1-D and 2-D</a></li>
+        <li data-n="05"><a href="#slide-05">Coherent and Incoherent Light</a></li>
+        <li data-n="06"><a href="#slide-06">Spatial Light Modulators</a></li>
+        <li data-n="07"><a href="#slide-07">Detectors and the Phase Problem</a></li>
+        <li data-n="07b"><a href="#slide-07b">Pixels, the DFT and Coherent Detection</a></li>
+        <li data-n="08"><a href="#slide-08">Integrated-Photonic Alternatives</a></li>
+        <li data-n="08b"><a href="#slide-08b">On a Chip: Slab Lens or Butterfly Mesh</a></li>
+        <li data-n="08c"><a href="#slide-08c">Case Study: A Photonic Link Module</a></li>
+        <li data-n="08d"><a href="#slide-08d">Two Optical Domains in One Module</a></li>
+        <li data-n="08e"><a href="#slide-08e">A Fixed Band Is a Mask; Top-k Is a Decision</a></li>
+        <li data-n="09"><a href="#slide-09">Precision: ENOB, Noise and Crosstalk</a></li>
+        <li data-n="10"><a href="#slide-10">Buying Precision: Passes and Planes</a></li>
+        <li data-n="10b"><a href="#slide-10b">Binary Input and Bit Planes</a></li>
+        <li data-n="11"><a href="#slide-11">Conversion Energy and Static Power</a></li>
+        <li data-n="12"><a href="#slide-12">What Optics Gives and What It Costs</a></li>
+        <li data-n="13"><a href="#slide-13">What to Take Away</a></li>
     </ul>
     <div class="concepts">
         <p><strong>Concepts used here, and where they are explained.</strong> Each links to a glossary entry: this <a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#glossary">series glossary</a>, or the glossaries of LLM Inference Simulators, FHE Accelerator Simulators and the Simulation Engineering Toolkit for concepts those series already explain.</p>
-        <div class="chips"><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-optics" title="A lens Fourier-transforms the light field; two lenses with a mask between them multiply in the frequency domain, which is a convolution. The transform is free; the converters and lasers around it are not.">Fourier optics and the 4f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-lens" title="In coherent light, the field in a lens&#x27;s back focal plane is the 2-D Fourier transform of the field in its front focal plane; a point at distance x from the axis holds spatial frequency x/(λf). The transform is computed by propagation, in one pass, for every pixel at once.">The lens as a Fourier transformer</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-convthm" title="A convolution in one domain is a pointwise product in the other: F{h ∗ u} = F{h}·F{u}. A 4f system uses it optically (mask = filter spectrum); FFT convolution uses it digitally in O(n log n).">The convolution theorem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-longconv" title="A convolution whose filter is as long as the sequence, computed by FFT, pointwise multiply and inverse FFT in O(L log L) instead of O(L²). It is the token mixer of S4&#x27;s convolution mode, H3 and Hyena.">Long convolution by FFT</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-causalpad" title="An FFT computes a circular convolution, which wraps late inputs onto early outputs. Padding input and filter to at least 2L before the FFT makes it the linear, causal convolution a decoder needs.">Causal zero-padding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherence" title="Coherent light (a laser) adds complex field amplitudes, so signed and complex values interfere; incoherent light adds non-negative intensities. Coherent systems compute Fourier transforms of fields; incoherent ones are limited to non-negative quantities unless values are offset or split.">Coherent and incoherent light</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-slm" title="A pixelated device that writes values into a light field. Liquid-crystal SLMs modulate phase or amplitude and settle in tens of milliseconds; a 2-megapixel digital micromirror device switches amplitude at about 1 kHz with 8-bit depth (20 kHz binary). Pixel count and frame rate bound how fast inputs and Fourier-plane masks can change.">Spatial light modulator (SLM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-phaseproblem" title="Photodetectors measure intensity |E|², losing the sign and phase of the field. Remedies: interfere with a reference beam (coherent detection), add a bias so the field stays positive, split positive and negative parts into two passes, or recover phase iteratively (phase retrieval).">Square-law detection and the phase problem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzimesh" title="A triangular (Reck) or rectangular (Clements) grid of MZIs implements any N×N unitary, including the DFT, on a chip: N(N−1)/2 MZIs, each with a phase shifter that must be calibrated and held.">Mach&ndash;Zehnder interferometer (MZI) meshes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-onchipfft" title="On-chip alternatives to a free-space lens: diffractive or slab-lens structures, MZI meshes, and coupler and delay-line FFT circuits (used for all-optical OFDM). They are compact and fast but much smaller than a free-space 4f system.">Integrated optical Fourier transforms</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-enob" title="Effective number of bits: the real precision of an analogue chain. Rounding to the exact integer needs the error below one half, which sets a minimum ENOB for each block size and digit width.">ENOB and exact rounding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-floatenob" title="For float workloads the analogue chain must match the number format&#x27;s own rounding error, not be exact. Relative RMS error = crest × 2^−ENOB × 2/√12; matching BF16 needs about 10.3 ENOB, INT8 8.0, FP8 E4M3 6.3. FHE&#x27;s exact-rounding rule does not transfer to long convolutions.">The noise rule for floating-point workloads</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-crest" title="The ratio of a signal&#x27;s peak to its RMS value. An ADC&#x27;s full scale must cover the peak, so a high crest factor wastes resolution on the rare large values: the noise rule&#x27;s error scales with it.">Crest factor</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-averaging" title="Repeating an analogue operation k times and averaging cuts random noise by √k, buying ½ log2 k bits: one extra bit costs four times the passes. Digit planes, which make FHE exact, do not help a float workload.">Dynamic precision by repeated passes</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-digits" title="Splitting each operand into d digits of b bits so that low-precision analogue products can be recombined exactly in digital logic. Narrower digits need less precision but more passes.">Digit decomposition (bit slicing)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-walden" title="Converter energy per sample ≈ FoM × 2ENOB, so every extra bit of precision doubles the energy of each DAC or ADC conversion.">Walden figure of merit</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-conversion" title="Every value entering or leaving the optics costs a DAC or ADC sample, at Walden-FoM × 2^ENOB joules. With the series&#x27; illustrative FoMs a Hyena-style long convolution breaks even with a 1 pJ/FLOP digital FFT at about 12 ENOB.">Conversion-bound optics and the break-even ENOB</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-photonicpower" title="Optical operations are cheap, but lasers and thermal tuning burn static power, and every DAC/ADC conversion costs energy that grows with resolution. Gains need high reuse per conversion and a busy core.">Power in photonic compute</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-staticdyn" title="Static power (leakage, clocks, always-on logic) is paid whenever a chip is on; dynamic power αCV²f is paid for switching. Energy per operation scales with V², which is why lowering voltage pays quadratically.">Static and dynamic power</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-ntt" title="The FFT over a finite field Zq. It moves a limb between coefficient and evaluation form in (N/2) log N butterflies, so polynomial multiplication becomes element-wise. Every key switch and rescale runs NTTs.">Number-theoretic transform (NTT)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-bluestein" title="Rewrites a DFT as chirp multiplies around a convolution (using jk = (j² + k² − (k−j)²)/2), which lets a convolution engine compute an exact modular DFT.">Bluestein's algorithm</a></div>
+        <div class="chips"><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-optics" title="A lens Fourier-transforms the light field; two lenses with a mask between them multiply in the frequency domain, which is a convolution. The transform is free; the converters and lasers around it are not.">Fourier optics and the 4f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-lens" title="In coherent light, the field in a lens&#x27;s back focal plane is the 2-D Fourier transform of the field in its front focal plane; a point at distance x from the axis holds spatial frequency x/(λf). The transform is computed by propagation, in one pass, for every pixel at once.">The lens as a Fourier transformer</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-fourierplane" title="The back focal plane of a lens, one focal length behind it, with the input one focal length in front (a 2f system). Each plane-wave component of the input focuses to its own point there, x = λfu, so the plane holds the spectrum: where a camera reads it or a mask filters it. A second lens (4f) transforms back to a mirrored image.">Fourier plane and the 2f system</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-convthm" title="A convolution in one domain is a pointwise product in the other: F{h ∗ u} = F{h}·F{u}. A 4f system uses it optically (mask = filter spectrum); FFT convolution uses it digitally in O(n log n).">The convolution theorem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-longconv" title="A convolution whose filter is as long as the sequence, computed by FFT, pointwise multiply and inverse FFT in O(L log L) instead of O(L²). It is the token mixer of S4&#x27;s convolution mode, H3 and Hyena.">Long convolution by FFT</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-causalpad" title="An FFT computes a circular convolution, which wraps late inputs onto early outputs. Padding input and filter to at least 2L before the FFT makes it the linear, causal convolution a decoder needs.">Causal zero-padding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherence" title="Coherent light (a laser) adds complex field amplitudes, so signed and complex values interfere; incoherent light adds non-negative intensities. Coherent systems compute Fourier transforms of fields; incoherent ones are limited to non-negative quantities unless values are offset or split.">Coherent and incoherent light</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-slm" title="A pixelated device that writes values into a light field. Liquid-crystal SLMs modulate phase or amplitude and settle in tens of milliseconds; a 2-megapixel digital micromirror device switches amplitude at about 1 kHz with 8-bit depth (20 kHz binary). Pixel count and frame rate bound how fast inputs and Fourier-plane masks can change.">Spatial light modulator (SLM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-phaseproblem" title="Photodetectors measure intensity |E|², losing the sign and phase of the field. Remedies: interfere with a reference beam (coherent detection), add a bias so the field stays positive, split positive and negative parts into two passes, or recover phase iteratively (phase retrieval).">Square-law detection and the phase problem</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-coherentdet" title="Mixing the signal field with a local oscillator from the same laser in a 50:50 coupler and subtracting the two photodiode currents (balanced detection). The difference is 2·Re(E·LO*), linear in the field, so sign and phase survive: an oscillator at 0° reads the real part, at 90° the imaginary part.">Coherent detection and balanced photodiodes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzimesh" title="A triangular (Reck) or rectangular (Clements) grid of MZIs implements any N×N unitary, including the DFT, on a chip: N(N−1)/2 MZIs, each with a phase shifter that must be calibrated and held.">Mach&ndash;Zehnder interferometer (MZI) meshes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzm" title="An interferometer with a phase shifter in one arm that turns a voltage into a change of optical amplitude: how electrical data is written onto light in a waveguide, at GHz symbol rates. The link module of slide 08c has four, driven with binary (NRZ) levels.">Mach&ndash;Zehnder modulator (MZM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-onchipfft" title="On-chip alternatives to a free-space lens: diffractive or slab-lens structures, MZI meshes, and coupler and delay-line FFT circuits (used for all-optical OFDM). They are compact and fast but much smaller than a free-space 4f system.">Integrated optical Fourier transforms</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-wdm" title="Several wavelengths sharing one waveguide or fibre, each carrying its own data. Through an on-chip transform each wavelength can in principle run its own transform at once, multiplying throughput; in free space, mixed wavelengths smear the spectrum instead.">Wavelength-division multiplexing (WDM)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-nrz" title="Non-return-to-zero: one bit per symbol, held for the whole symbol, as two levels; the usual format on a short-reach link. Filtering the line signal below the bit rate smears neighbouring bits into each other (inter-symbol interference), closing the eye and flipping bits: the fibre&#x27;s spectrum is the bits&#x27;, not the data&#x27;s.">NRZ signalling and inter-symbol interference</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-computetransit" title="Operations applied in a link&#x27;s data path, between transmitter and receiver, on data that must move anyway. At about 1–2 operations per byte at line rate it suits requantising or frequency-compressing the KV hand-off, not matmuls; it helps latency only where the link is the bottleneck. Speculative here.">Compute in transit</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-enob" title="Effective number of bits: the real precision of an analogue chain. Rounding to the exact integer needs the error below one half, which sets a minimum ENOB for each block size and digit width.">ENOB and exact rounding</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-floatenob" title="For float workloads the analogue chain must match the number format&#x27;s own rounding error, not be exact. Relative RMS error = crest × 2^−ENOB × 2/√12; matching BF16 needs about 10.3 ENOB, INT8 8.0, FP8 E4M3 6.3. FHE&#x27;s exact-rounding rule does not transfer to long convolutions.">The noise rule for floating-point workloads</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-crest" title="The ratio of a signal&#x27;s peak to its RMS value. An ADC&#x27;s full scale must cover the peak, so a high crest factor wastes resolution on the rare large values: the noise rule&#x27;s error scales with it.">Crest factor</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-averaging" title="Repeating an analogue operation k times and averaging cuts random noise by √k, buying ½ log2 k bits: one extra bit costs four times the passes. Digit planes, which make FHE exact, do not help a float workload.">Dynamic precision by repeated passes</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-digits" title="Splitting each operand into d digits of b bits so that low-precision analogue products can be recombined exactly in digital logic. Narrower digits need less precision but more passes.">Digit decomposition (bit slicing)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-walden" title="Converter energy per sample ≈ FoM × 2ENOB, so every extra bit of precision doubles the energy of each DAC or ADC conversion.">Walden figure of merit</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-conversion" title="Every value entering or leaving the optics costs a DAC or ADC sample, at Walden-FoM × 2^ENOB joules. With the series&#x27; illustrative FoMs a Hyena-style long convolution breaks even with a 1 pJ/FLOP digital FFT at about 12 ENOB.">Conversion-bound optics and the break-even ENOB</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-photonicpower" title="Optical operations are cheap, but lasers and thermal tuning burn static power, and every DAC/ADC conversion costs energy that grows with resolution. Gains need high reuse per conversion and a busy core.">Power in photonic compute</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-staticdyn" title="Static power (leakage, clocks, always-on logic) is paid whenever a chip is on; dynamic power αCV²f is paid for switching. Energy per operation scales with V², which is why lowering voltage pays quadratically.">Static and dynamic power</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-ntt" title="The FFT over a finite field Zq. It moves a limb between coefficient and evaluation form in (N/2) log N butterflies, so polynomial multiplication becomes element-wise. Every key switch and rescale runs NTTs.">Number-theoretic transform (NTT)</a><a href="https://brendanjameslynskey.github.io/FHE_Hub_Accelerator_Simulators/#g-bluestein" title="Rewrites a DFT as chirp multiplies around a convolution (using jk = (j² + k² − (k−j)²)/2), which lets a convolution engine compute an exact modular DFT.">Bluestein's algorithm</a></div>
     </div>
 </section>
 
@@ -853,6 +921,31 @@
     <div class="slide-number">01</div>
     <h2>Why Fourier Optics, and Why Now</h2>
     <p>A lens performs a two-dimensional Fourier transform on a light field as the light propagates through it. Every pixel of the transform is produced at once, by physics rather than by arithmetic, so the transform has no O(n log n) operation count, only the cost of getting data into and out of the light. That asymmetry is the whole story of this series.</p>
+    <div class="fig">
+        <svg class="wide-only" viewBox="0 0 600 190" role="img" aria-label="Where the cost sits: converters and modulators at the edges are paid per value; the optics in the middle has no operation count">
+            <rect class="s-box" x="6" y="40" width="112" height="70" rx="6"/><text class="s-t" x="18" y="66">digital in</text><text class="s-d" x="18" y="86">DAC + driver</text><text class="s-d" x="18" y="102">per value</text>
+            <rect class="s-box" x="140" y="40" width="96" height="70" rx="6"/><text class="s-t" x="150" y="66">modulator</text><text class="s-d" x="150" y="86">writes light</text>
+            <rect class="s-acc" x="258" y="22" width="110" height="106" rx="6"/><text class="s-a" x="270" y="48">optics</text><text class="s-d" x="270" y="70">transform by</text><text class="s-d" x="270" y="86">propagation:</text><text class="s-d" x="270" y="102">no op count</text>
+            <ellipse cx="313" cy="118" rx="38" ry="5" style="fill: var(--c-teal); opacity: 0.35"/>
+            <rect class="s-box" x="390" y="40" width="96" height="70" rx="6"/><text class="s-t" x="400" y="66">detector</text><text class="s-d" x="400" y="86">reads |E|&sup2;</text>
+            <rect class="s-box" x="508" y="40" width="86" height="70" rx="6"/><text class="s-t" x="516" y="66">ADC</text><text class="s-d" x="516" y="86">per value</text>
+            <path class="s-line" d="M118 75 H136 M236 75 H254 M368 75 H386 M486 75 H504"/>
+            <path d="M6 150 H236" style="stroke: var(--c-orange); stroke-width: 6"/><text x="6" y="174" style="fill: var(--c-orange); font-size: 12px">the bill: paid per value, at the edges</text>
+            <path d="M258 150 H368" style="stroke: var(--accent); stroke-width: 6"/><text x="262" y="174" class="s-a" style="font-size: 12px">nearly free</text>
+            <path d="M390 150 H594" style="stroke: var(--c-orange); stroke-width: 6"/>
+        </svg>
+        <svg class="narrow-only" viewBox="0 0 300 310" role="img" aria-label="Where the cost sits, top to bottom: DAC and modulator cost per value, the optics is nearly free, detector and ADC cost per value">
+            <rect class="s-box" x="4" y="4" width="180" height="46" rx="6"/><text class="s-t" x="14" y="24">digital in</text><text class="s-d" x="14" y="42">DAC + driver</text>
+            <rect class="s-box" x="4" y="64" width="180" height="46" rx="6"/><text class="s-t" x="14" y="84">modulator</text><text class="s-d" x="14" y="102">writes light</text>
+            <rect class="s-acc" x="4" y="124" width="180" height="56" rx="6"/><text class="s-a" x="14" y="146">optics</text><text class="s-d" x="14" y="166">no op count</text>
+            <rect class="s-box" x="4" y="194" width="180" height="46" rx="6"/><text class="s-t" x="14" y="214">detector</text><text class="s-d" x="14" y="232">reads |E|&sup2;</text>
+            <rect class="s-box" x="4" y="254" width="180" height="46" rx="6"/><text class="s-t" x="14" y="274">ADC</text><text class="s-d" x="14" y="292">per value</text>
+            <path d="M200 6 V108" style="stroke: var(--c-orange); stroke-width: 6"/><text x="210" y="50" style="fill: var(--c-orange); font-size: 12px">paid per</text><text x="210" y="66" style="fill: var(--c-orange); font-size: 12px">value</text>
+            <path d="M200 126 V178" style="stroke: var(--accent); stroke-width: 6"/><text class="s-a" x="210" y="150" style="font-size: 12px">nearly</text><text class="s-a" x="210" y="166" style="font-size: 12px">free</text>
+            <path d="M200 196 V298" style="stroke: var(--c-orange); stroke-width: 6"/><text x="210" y="240" style="fill: var(--c-orange); font-size: 12px">paid per</text><text x="210" y="256" style="fill: var(--c-orange); font-size: 12px">value</text>
+        </svg>
+        <p class="fig-cap">Where the cost sits. Every value pays a conversion on the way in and out; the transform in the middle is done by propagation. Slides 09&ndash;11 put numbers on the edges.</p>
+    </div>
     <div class="diagram-grid cols-2">
         <div class="diagram-panel accent-border">
             <h4>What it offers</h4>
@@ -890,7 +983,52 @@
         <li><strong>Resolution is finite.</strong> The lens aperture and the pixel pitch of the devices at each plane bound the number of resolvable points (the space&ndash;bandwidth product), which plays the role of the FFT length.</li>
         <li><strong>It is 2-D by nature.</strong> A cylindrical lens transforms along one axis only, so one device can compute many independent 1-D transforms, one per row, in parallel. That is the form a sequence model's per-channel convolutions would take (deck 02).</li>
     </ul>
+    <div class="fig">
+        <div class="control-row"><label for="ap-kind">Transparency in the front focal plane</label><select id="ap-kind"><option value="square">square aperture</option><option value="slits">two slits</option><option value="grating">grating</option><option value="circle" selected>circular aperture</option><option value="shapes">square, ring and bar</option></select></div>
+        <canvas id="fig-aperture" aria-label="Input transparency and the intensity in the lens's back focal plane, computed by a 2-D FFT"></canvas>
+        <p class="fig-cap">Left: the input field U<sub>0</sub> (128 &times; 128 samples). Right: what a camera in the back focal plane sees, |U<sub>f</sub>|&sup2; on a log scale, computed by a 2-D FFT of the left panel (centred: zero frequency on the axis). A square gives a sinc&sup2; cross, a circle the Airy rings, two slits fringes, a grating a row of spots. Small features spread far; large ones stay near the axis.</p>
+    </div>
     <p style="font-size:0.85rem;">The relation is the standard result of scalar diffraction theory, derived in any Fourier-optics text; the review by Wetzstein et al. puts it in the context of optical inference (<a href="https://doi.org/10.1038/s41586-020-2973-6">Nature 588, 2020</a>).</p>
+</section>
+
+<section class="slide" id="slide-02b">
+    <div class="slide-number">02b</div>
+    <h2>Where the Fourier Plane Is: 2f and 4f</h2>
+    <p>Any input field is a sum of plane waves, one per spatial frequency u, each leaving at its own angle (sin&theta; = &lambda;u). A lens maps every direction to one point of its back focal plane, so each component lands on its own spot:</p>
+    <p class="eq">x = f tan&theta; &asymp; &lambda; f u</p>
+    <div class="fig" id="anim-2f">
+        <canvas id="cv-2f" aria-label="Ray animation: five plane-wave components leave the input, lens 1 focuses each to its own point in the Fourier plane, lens 2 recollimates them into a mirrored output"></canvas>
+        <p class="fig-cap">Paraxial ray transfer, traced by the model (<code>trace4f</code>): every ray of slope s reaches height f&middot;s in the Fourier plane, whatever its starting height, and leaves the output at height &minus;y<sub>0</sub>. Five components (u = &minus;2u<sub>0</sub> &hellip; 2u<sub>0</sub>); angles exaggerated for visibility.</p>
+    </div>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>2f: one lens, the spectrum</h4>
+            <p>Input one focal length in front of the lens, read one focal length behind it. That back focal plane holds the far-field (Fraunhofer) pattern: the Fourier transform of the input. Put a camera there to read the spectrum, or a mask to filter it.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>4f: two lenses, back to an image</h4>
+            <p>A second lens transforms again. Two forward transforms return the input mirrored (y &rarr; &minus;y), multiplied by whatever the mask did in between: a filtered image. That is the convolver of <a href="#slide-03">slide 03</a>.</p>
+        </div>
+    </div>
+</section>
+
+<section class="slide" id="slide-02c">
+    <div class="slide-number">02c</div>
+    <h2>Scale and Coherence</h2>
+    <p>Because spatial frequency u lands at x = &lambda; f u, the same input gives a pattern whose size scales with wavelength. One wavelength gives one sharp pattern; several give differently scaled copies that smear into each other, worst at high frequencies.</p>
+    <div class="fig" id="anim-lambda">
+        <div class="sim-grid">
+            <div class="control-row"><label for="lam-slider">Wavelength</label><input type="range" id="lam-slider" min="400" max="1600" step="10" value="1550"><span class="val" id="lam-val">1,550 nm</span></div>
+            <div class="control-row"><label for="lam-multi">Light source</label><select id="lam-multi"><option value="1" selected>one wavelength (a laser)</option><option value="3">three wavelengths at once</option></select></div>
+        </div>
+        <canvas id="cv-lambda" aria-label="Back-focal-plane intensity of a grating against position, for the chosen wavelength or for three wavelengths at once"></canvas>
+        <p class="fig-cap">An amplitude grating (period p = 20 &micro;m, 64 periods) behind a lens of f = 100 mm: intensity across the back focal plane, log scale, from the grating's FFT read at u = x/(&lambda;f) (<code>intensityAt</code>). The first order sits at x<sub>1</sub> = &lambda;f/p. Three wavelengths (450, 532 and 633 nm) make three patterns whose orders separate further at each order. Grating and lens are illustrative.</p>
+    </div>
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel accent-border"><h4>Temporal coherence</h4><p>One wavelength (a narrow-linewidth laser), so every frequency lands in one place. Broadband light blurs the spectrum radially.</p></div>
+        <div class="diagram-panel accent-border"><h4>Spatial coherence</h4><p>A collimated beam (a single plane wave in) so the input's own structure, not the source's, sets the pattern. An extended source convolves the spectrum with its own angular spread.</p></div>
+        <div class="diagram-panel accent-border"><h4>Incoherent light</h4><p>Still convolves, but intensities, with the intensity point-spread function: a real, non-negative kernel and no field Fourier transform (<a href="#slide-05">slide 05</a>).</p></div>
+    </div>
 </section>
 
 <section class="slide" id="slide-03">
@@ -928,6 +1066,11 @@
             <text x="650" y="176" class="t">output</text><text x="630" y="191" class="d">detector + ADC</text>
             <text x="150" y="218" class="m">result at the output plane: (h &lowast; u)(&minus;x), a convolution, mirrored</text>
         </svg>
+    </div>
+    <div class="fig" id="anim-4f">
+        <div class="control-row"><label for="m4f-mask">Fourier-plane mask</label><select id="m4f-mask"><option value="low" selected>low-pass aperture (blur)</option><option value="high">central stop (edges)</option><option value="none">no mask (open)</option></select></div>
+        <canvas id="cv-4f" aria-label="Four planes of a 4f system: input, spectrum after lens 1, masked spectrum, output after lens 2"></canvas>
+        <p class="fig-cap">The four planes, each computed: lens 1 = a forward 2-D FFT; the mask multiplies; lens 2 = a <em>second forward</em> FFT, so the output comes back mirrored (look at the shapes' positions). With the mask open the output equals the mirrored input to rounding, a check browser_check runs.</p>
     </div>
     <ul>
         <li><strong>The convolution theorem:</strong> F{h &lowast; u} = F{h} &middot; F{u}. Lens 1 transforms the input, the mask multiplies it by the filter's spectrum H, and lens 2 transforms again. A second forward transform returns the result with coordinates mirrored, which is a relabelling, not a cost.</li>
@@ -1168,6 +1311,10 @@
 <section class="slide" id="slide-05">
     <div class="slide-number">05</div>
     <h2>Coherent and Incoherent Light</h2>
+    <div class="fig" id="anim-beams">
+        <canvas id="cv-beams" aria-label="Two equal beams with a changing relative phase: coherent fields add as phasors, so the intensity swings from 0 to 4; incoherent intensities always add to 2"></canvas>
+        <p class="fig-cap">Two equal beams, relative phase &phi; stepped round a full cycle (<code>twoBeam</code>). Coherent: the fields add as arrows, and the intensity |1 + e<sup>i&phi;</sup>|&sup2; swings from 4 to 0: signed values can cancel. Incoherent: intensities add, always 2.</p>
+    </div>
     <div class="diagram-grid cols-2">
         <div class="diagram-panel accent-border">
             <h4>Coherent (a laser)</h4>
@@ -1196,6 +1343,26 @@
     <div class="slide-number">06</div>
     <h2>Spatial Light Modulators</h2>
     <p>Data enters a free-space system through a <strong>spatial light modulator</strong> (SLM): a pixel array that writes amplitude or phase into the beam. One sits at the input plane; another can hold the Fourier-plane mask.</p>
+    <div class="fig">
+        <div class="fig-row">
+        <svg viewBox="0 0 204 250" role="img" aria-label="liquid-crystal pixel array: grey levels of phase, tens of Hz">
+            <text class="s-a" x="10" y="20">liquid crystal (LCoS)</text>
+            <g id="lc-grid"></g>
+            <text class="s-d" x="10" y="200">grey levels of phase</text><text class="s-d" x="10" y="218">many pixels</text><text class="s-d" x="10" y="236" style="fill: var(--c-orange)">settles: tens of Hz</text>
+        </svg>
+        <svg viewBox="204 0 204 250" role="img" aria-label="micromirror array: on/off mirrors, 2 MP at 1,031 Hz (8-bit), about 20 kHz binary">
+            <text class="s-a" x="214" y="20">micromirrors (DMD)</text>
+            <g id="dmd-grid"></g>
+            <text class="s-d" x="214" y="200">on/off mirrors</text><text class="s-d" x="214" y="218">2 MP: 1,031 Hz at 8 bits</text><text class="s-d" x="214" y="236" style="fill: var(--c-amber)">about 20 kHz binary</text>
+        </svg>
+        <svg viewBox="408 0 192 250" role="img" aria-label="on-chip modulators, one per waveguide, GHz">
+            <text class="s-a" x="418" y="20">on-chip modulators</text>
+            <g id="mod-rails"></g>
+            <text class="s-d" x="418" y="200">one per waveguide</text><text class="s-d" x="418" y="218">few channels</text><text class="s-d" x="418" y="236" style="fill: var(--accent)">GHz (above 14 GHz)</text>
+        </svg>
+        </div>
+        <p class="fig-cap">Pixels &times; rate is the throughput either way. Free space: millions of slow pixels. On chip: a few fast channels. Rates as in the table below (Miscuglio et al.; Feldmann et al.).</p>
+    </div>
     <div class="table-wrap">
     <table>
         <tr><th>Device</th><th>Writes</th><th>Update rate</th><th>Notes</th></tr>
@@ -1215,6 +1382,10 @@
     <div class="slide-number">07</div>
     <h2>Detectors and the Phase Problem</h2>
     <p>Photodetectors are <strong>square-law</strong>: they measure intensity |E|<sup>2</sup>, not the field E. A coherent 4f system computes a signed or complex field, and the detector throws away its sign and phase. Four remedies:</p>
+    <div class="fig">
+        <canvas id="fig-square" aria-label="A signed field E and its negative minus E give the same detected intensity"></canvas>
+        <p class="fig-cap">Top: a signed field E across the detector (solid) and a different field, &minus;E (dashed). Bottom: what square-law pixels read, |E|&sup2;: identical for both. Sign and phase are gone before the ADC sees anything.</p>
+    </div>
     <div class="table-wrap">
     <table>
         <tr><th>Remedy</th><th>How</th><th>Cost</th></tr>
@@ -1229,13 +1400,52 @@
         <li><strong>Homodyne detection in optical neural networks:</strong> Hamerly et al. encode both inputs and weights optically and multiply them by interfering the two at the detectors (photoelectric multiplication, <a href="https://arxiv.org/abs/1812.07614">arXiv:1812.07614</a>; <a href="https://doi.org/10.1103/PhysRevX.9.021032">Phys. Rev. X 9, 2019</a>).</li>
         <li><strong>Phase retrieval algorithms</strong> are compared in Fienup's classic paper (<a href="https://doi.org/10.1364/AO.21.002758">Appl. Opt. 21, 1982</a>).</li>
         <li>The deck 03 design charges intensity detection as twice the passes, and coherent detection as one ADC sample per real output.</li>
+        <li>How coherent detection works, and what a pixelated detector actually reads: <a href="#slide-07b">slide 07b</a>.</li>
     </ul>
+</section>
+
+<section class="slide" id="slide-07b">
+    <div class="slide-number">07b</div>
+    <h2>Pixels, the DFT and Coherent Detection</h2>
+    <p>A pixelated input (an SLM, or one modulator per waveguide) and a pixelated detector turn the lens's continuous transform into, approximately, a <strong>discrete Fourier transform</strong>: N input pixels, N output samples, each sample the DFT bin times a gentle sinc envelope from the pixel shape.</p>
+    <div class="fig">
+        <div class="control-row"><label for="dft-kind">Input pixels</label><select id="dft-kind"><option value="pos" selected>non-negative (an intensity SLM)</option><option value="signed">signed, zero mean (a coherent modulator)</option></select></div>
+        <canvas id="fig-dft" aria-label="Sixteen input pixels; the continuous Fourier transform of the pixel row and its samples at the detector pixels, which are the DFT times a sinc envelope"></canvas>
+        <p class="fig-cap" id="dft-note">Top: 16 input pixel values. Bottom: |F(u)|&sup2; of the pixel row as a continuous curve (<code>pixelFT</code>), and the 16 detector pixels sampling it at u = k/16 (dots): sinc(k/16) &times; DFT bin k, checked against the DFT in the tests.</p>
+    </div>
+    <ul>
+        <li><strong>The DC term dominates</strong> a non-negative input: bin 0 is the sum of every pixel, so it sets the ADC's full scale and squeezes every other bin into the bottom codes. That is the crest-factor penalty of <a href="#slide-09">slide 09</a>, and a reason to centre the data (signed input) or block DC with a stop in the Fourier plane.</li>
+    </ul>
+    <div class="fig" id="anim-bal">
+        <canvas id="cv-bal" aria-label="Balanced detection animation: each DFT bin's field is mixed with a local oscillator in a 50:50 coupler; two photodiodes subtract; with the oscillator at phase 0 the difference is the real part, at 90 degrees the imaginary part"></canvas>
+        <p class="fig-cap">Coherent (balanced) detection, bin by bin, of a signed 8-pixel input (<code>balanced</code>). A 50:50 coupler mixes the signal E with a local oscillator (LO) of the same laser; the two photodiodes read |E + LO|&sup2;/2 and |E &minus; LO|&sup2;/2; their difference is 2&middot;Re(E&middot;LO*), <em>linear</em> in E. LO at 0&deg; reads the real part, at 90&deg; the imaginary part. A camera reads only |E|&sup2; (grey bars).</p>
+    </div>
 </section>
 
 <section class="slide" id="slide-08">
     <div class="slide-number">08</div>
     <h2>Integrated-Photonic Alternatives</h2>
     <p>A free-space 4f system is large and slow to reconfigure. On a chip there are three ways to compute a Fourier transform or a linear transform:</p>
+    <div class="fig">
+        <div class="fig-row">
+        <svg viewBox="0 0 204 200" role="img" aria-label="MZI mesh">
+            <text class="s-a" x="8" y="18">MZI mesh</text>
+            <g id="ch-mesh"></g>
+            <text class="s-d" x="8" y="186">N(N&minus;1)/2 tunable MZIs</text>
+        </svg>
+        <svg viewBox="204 0 204 200" role="img" aria-label="diffractive slab">
+            <text class="s-a" x="212" y="18">diffractive slab</text>
+            <g id="ch-slab"></g>
+            <text class="s-d" x="212" y="186">passive, fixed when made</text>
+        </svg>
+        <svg viewBox="408 0 192 200" role="img" aria-label="couplers and delays">
+            <text class="s-a" x="416" y="18">couplers + delays</text>
+            <g id="ch-delay"></g>
+            <text class="s-d" x="416" y="186">FFT for optical OFDM</text>
+        </svg>
+        </div>
+        <p class="fig-cap">Schematics, not layouts. Left: a rectangular (Clements) grid of 2&times;2 interferometers, each with a phase shifter (dot). Middle: waveguides feed a slab with diffractive layers. Right: a butterfly of couplers with delay lines between stages. Slide 08b animates the two that compute an exact or sampled DFT.</p>
+    </div>
     <div class="table-wrap">
     <table>
         <tr><th>Approach</th><th>What it computes</th><th>Scale and limits</th><th>Example</th></tr>
@@ -1247,6 +1457,156 @@
     <ul>
         <li><strong>Photonic tensor cores</strong> perform matrix-vector products rather than transforms: Feldmann et al. (phase-change memory and frequency combs, <a href="https://doi.org/10.1038/s41586-020-03070-1">Nature 589, 2021</a>) and Xu et al. (11 TOPS, <a href="https://doi.org/10.1038/s41586-020-03063-0">Nature 589, 2021</a>). Those are optical MACs, the other branch deck 02 distinguishes.</li>
         <li>An on-chip FFT has the converter bill of a free-space one without its millions of parallel pixels; its advantage is speed of reconfiguration and integration.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-08b">
+    <div class="slide-number">08b</div>
+    <h2>On a Chip: Slab Lens or Butterfly Mesh</h2>
+    <p>Two families compute a Fourier transform on a chip. Both are 1-D, both take their data from a modulator per waveguide (not an illuminated picture), and both are read by a detector per output.</p>
+    <div class="fig" id="anim-chip">
+        <canvas id="cv-chip" aria-label="Side by side: a slab lens spreads light from 8 input waveguides and its output arc carries the continuous transform, sampled by 8 output waveguides; a butterfly mesh computes the exact 8-point DFT in three layers of couplers and phase shifters"></canvas>
+        <p class="fig-cap">Both panels transform the same 8 modulated inputs. (a) Slab: the field on the output arc is the continuous transform (<code>slabField</code>, curve); output waveguides sample it (dots), giving the DFT. (b) Mesh: bit-reversed wiring, then log<sub>2</sub>8 = 3 layers of N/2 = 4 butterflies (<code>fftStages</code>); bar height = |value| on each waveguide. Both final outputs equal the DFT (checked).</p>
+    </div>
+    <div class="table-wrap">
+    <table>
+        <tr><th></th><th>(a) Diffractive or slab &ldquo;on-chip lens&rdquo;</th><th>(b) Interferometer mesh as FFT butterflies</th></tr>
+        <tr><td>Physics</td><td>Free diffraction across a planar waveguide region</td><td>2&times;2 couplers and fixed phase shifters wired as radix-2 (or radix-4) butterflies</td></tr>
+        <tr><td>Computes</td><td>A continuous transform, sampled by the output waveguides: approximately a DFT</td><td>An exact N-point DFT, by construction</td></tr>
+        <tr><td>Errors</td><td>Aberration, sampling, crosstalk between outputs</td><td>Coupler ratio and phase errors that compound over log<sub>2</sub>N layers</td></tr>
+    </table>
+    </div>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border"><h4>Common ground</h4><ul><li><strong>Input:</strong> one modulator per waveguide, at the electrical clock.</li><li><strong>2-D</strong> = a pass over rows, a transpose, a pass over columns: separable, like a 2-D FFT.</li></ul></div>
+        <div class="diagram-panel accent-border"><h4>&ldquo;Instantaneous&rdquo;, with a clock</h4><ul><li>Light crosses the chip in picoseconds, but a new vector enters only once per modulator symbol, so throughput is the modulator and detector clock (GHz), times the channels.</li><li><strong>WDM</strong> (one transform per wavelength through the same structure) can in principle multiply it.</li></ul></div>
+    </div>
+</section>
+
+<section class="slide" id="slide-08c">
+    <div class="slide-number">08c</div>
+    <h2>Case Study: A Photonic Link Module</h2>
+    <p>A photonic link module (<a href="https://arxiv.org/abs/2608.21536">arXiv:2608.21536</a>, Kundu et al., &ldquo;Programmable Compute-in-Transit using Integrated Photonics&rdquo;) puts an optical Fourier transform inside a pluggable network module, between a host card and the fibre. Its signal path:</p>
+    <div class="fig" id="anim-module">
+        <canvas id="cv-module" aria-label="Animated signal path of the module: host FPGA card, QSFP56 port, four Mach-Zehnder modulators with binary NRZ input, a passive diffractive optical Fourier transform device, balanced photodiodes, TIAs and ADCs, and the FPGA driver IP with modular arithmetic and error correction"></canvas>
+        <p class="fig-cap">Each step highlights one stage and what the paper says about it. Tags: <span class="src-tag paper">paper</span> arXiv:2608.21536 (full text); <span class="src-tag web">website</span> the developer's website; <span class="src-tag derived">derived</span> arithmetic shown here; <span class="src-tag inference">inference</span> this deck's reading, not stated in the paper.</p>
+    </div>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Item</th><th>What is reported</th><th>Source</th></tr>
+        <tr><td>Host and port</td><td>A QSFP56 port connects the module to a host Alveo V80 FPGA card</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Input</td><td>Four Mach&ndash;Zehnder modulator (MZM) channels; &ldquo;The transmitted data to the module is restricted to binary (NRZ) levels.&rdquo;</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Transform</td><td>&ldquo;a proprietary passive diffractive device that computes Optical Fourier Transform (OFT)&rdquo;</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Detection</td><td>Balanced photodiodes: coherent detection</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Rates</td><td>Process-design-kit devices at 14 GBaud; drivers and TIAs up to 56 GBaud</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Power</td><td>9.7 W for the module</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Operations</td><td>&ldquo;1xN FFT with Radix-4 decimation, 1 x N NTT with Radix-4 decimation, Addition &amp; Subtraction, Multiplication, MAC, Modular Addition &amp; Subtraction, Modular Multiplication, Modular MAC, Modular Multiplication &amp; Subtraction (MSUB), Floating Point MAC.&rdquo; No comparisons, rounding or top-k (<a href="#slide-08e">slide 08e</a>).</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Digital side</td><td>Modular arithmetic in the FPGA driver IP (&ldquo;prototype modular arithmetic logic&rdquo;), and a &ldquo;proprietary Error Correction IP&rdquo;</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>FHE run</td><td>65,536-point NTTs &ldquo;decomposed into 256-point transforms and then further distributed across the four optical channels using a radix-4 decomposition&rdquo;</td><td><span class="src-tag paper">paper</span></td></tr>
+        <tr><td>Headline</td><td>&ldquo;enabling tens of GFLOPs of operations on data links&rdquo;: in the abstract only, with no breakdown</td><td><span class="src-tag paper">abstract</span></td></tr>
+        <tr><td>Projections</td><td>&ldquo;Estimated 2.76 pJ/bit link energy on 45nm silicon photonics, excluding laser&rdquo;; &ldquo;Native 384 GOPS / lambda @ 32GSps (GF45nm)&rdquo;</td><td><span class="src-tag web">website</span></td></tr>
+        <tr><td>Into the optics</td><td>4 channels &times; 14 GBaud &times; 1 bit per NRZ symbol = 56 Gb/s = <strong>7 GB/s</strong>, below the QSFP56 port's rate</td><td><span class="src-tag derived">derived</span></td></tr>
+        <tr><td><strong>Not reported</strong></td><td>Precision, ENOB, latency, energy per operation, measured throughput</td><td><span class="src-tag paper">paper</span></td></tr>
+    </table>
+    </div>
+    <div class="fig">
+        <svg class="wide-only" viewBox="0 0 600 150" role="img" aria-label="The FHE run's decomposition: a 65,536-point NTT becomes 256-point transforms, distributed across four optical channels by radix-4">
+            <rect class="s-box" x="6" y="30" width="150" height="80" rx="6"/><text class="s-t" x="18" y="58">65,536-point</text><text class="s-t" x="18" y="78">NTT</text><text class="s-d" x="18" y="98">= 256 &times; 256</text>
+            <path class="s-line" d="M156 70 H196"/><path d="M190 64 L198 70 L190 76" class="s-line"/>
+            <rect class="s-box" x="200" y="30" width="170" height="80" rx="6"/><text class="s-t" x="212" y="58">256-point</text><text class="s-t" x="212" y="78">transforms</text><text class="s-d" x="212" y="98">256 = 4&#8308;: radix-4</text>
+            <path class="s-line" d="M370 70 H410"/><path d="M404 64 L412 70 L404 76" class="s-line"/>
+            <g id="nt-lanes"></g>
+            <text class="s-d" x="420" y="140">four optical channels</text>
+        </svg>
+        <svg class="narrow-only" viewBox="0 0 300 330" role="img" aria-label="The FHE run's decomposition, top to bottom: a 65,536-point NTT, 256-point transforms, four optical channels">
+            <rect class="s-box" x="4" y="4" width="292" height="62" rx="6"/><text class="s-t" x="16" y="30">65,536-point NTT</text><text class="s-d" x="16" y="52">= 256 &times; 256</text>
+            <path class="s-line" d="M150 66 V92 M144 86 L150 94 L156 86"/>
+            <rect class="s-box" x="4" y="96" width="292" height="62" rx="6"/><text class="s-t" x="16" y="122">256-point transforms</text><text class="s-d" x="16" y="144">256 = 4&#8308;: radix-4</text>
+            <path class="s-line" d="M150 158 V184 M144 178 L150 186 L156 178"/>
+            <rect class="s-box" x="4" y="190" width="292" height="26" rx="4"/><text class="s-d" x="16" y="208">channel 1</text><path d="M120 203 h160" style="stroke: var(--c-teal); stroke-width: 3"/>
+            <rect class="s-box" x="4" y="222" width="292" height="26" rx="4"/><text class="s-d" x="16" y="240">channel 2</text><path d="M120 235 h160" style="stroke: var(--c-teal); stroke-width: 3"/>
+            <rect class="s-box" x="4" y="254" width="292" height="26" rx="4"/><text class="s-d" x="16" y="272">channel 3</text><path d="M120 267 h160" style="stroke: var(--c-teal); stroke-width: 3"/>
+            <rect class="s-box" x="4" y="286" width="292" height="26" rx="4"/><text class="s-d" x="16" y="304">channel 4</text><path d="M120 299 h160" style="stroke: var(--c-teal); stroke-width: 3"/>
+            <text class="s-d" x="16" y="326">four optical channels</text>
+        </svg>
+        <p class="fig-cap">The paper's description of its FHE run, drawn. That 256 = 4<sup>4</sup> (four radix-4 stages) is arithmetic; how the stages map onto the four channels is not described in the paper.</p>
+    </div>
+    <div class="callout">
+        <div class="callout-label">Related</div>
+        <p>The <a href="https://brendanjameslynskey.github.io/LLM_Hub_Compute_in_Transit/">Compute in Transit</a> series asks which LLM training and inference traffic such a module could work on, with its operations-per-byte budget (<a href="https://brendanjameslynskey.github.io/CiT_01_Compute_in_Transit/#slide-03">CiT 01</a>) and a fixed-band training experiment (<a href="https://brendanjameslynskey.github.io/CiT_04_Fixed_Band_Experiment/">CiT 04</a>).</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-08d">
+    <div class="slide-number">08d</div>
+    <h2>Two Optical Domains in One Module</h2>
+    <p>The module holds light in two different roles. Inside the chip the transform happens <strong>across space</strong>: a pattern over waveguides at one instant. On the fibre the data travels <strong>in time</strong>: one bit after another, NRZ.</p>
+    <div class="fig">
+        <div class="fig-row">
+        <svg viewBox="0 0 310 190" role="img" aria-label="inside the chip: four waveguides feed a diffractive region; the output is a pattern across output waveguides">
+            <text class="s-a" x="8" y="18">(a) in the chip: space</text>
+            <g id="dom-chip"></g>
+            <text class="s-d" x="8" y="180">pattern across waveguides, now</text>
+        </svg>
+        <svg viewBox="312 0 288 190" role="img" aria-label="on the fibre: a single core carries bits one after another in time">
+            <text class="s-a" x="320" y="18">(b) on the fibre: time</text>
+            <g id="dom-fibre"></g>
+            <text class="s-d" x="320" y="180">one mode; bits one after another</text>
+        </svg>
+        </div>
+    </div>
+    <div class="fig" id="anim-eye">
+        <canvas id="cv-eye" aria-label="An NRZ bit stream low-pass filtered by a mask on its spectrum: as the cut-off falls below the bit rate the eye diagram closes and bits flip"></canvas>
+        <p class="fig-cap">A 256-bit NRZ stream (16 samples a bit) with a brick-wall mask applied to <em>its</em> spectrum, the cut-off stepped down from 2&times; to 0.3&times; the bit rate (<code>lowpass</code>, <code>eye</code>). Left: the first 24 bits. Middle: the eye (every 2-bit window overlaid). Right: the spectrum and the mask. Below the bit rate, inter-symbol interference closes the eye and decisions at the centre start to fail.</p>
+    </div>
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel accent-border"><h4>The fibre's spectrum is the bits'</h4><p>Filtering the line signal does not filter the data: it smears neighbouring bits into each other (inter-symbol interference). One flipped exponent bit wrecks a float: <span id="flip-demo">1.0 becomes &hellip;</span></p></div>
+        <div class="diagram-panel accent-border"><h4>One mode, no picture</h4><p>A single-mode fibre carries one spatial mode, so a Fourier-plane pattern cannot be sent down it. The transform's output must be detected and re-serialised first.</p></div>
+        <div class="diagram-panel accent-border"><h4>Saving link time</h4><p>Filtering in transit does not free link time: the bits still cross the wire. The saving comes from sending fewer samples at the source (Nyquist): transform, keep the band, <em>then</em> transmit.</p></div>
+    </div>
+</section>
+
+<section class="slide" id="slide-08e">
+    <div class="slide-number">08e</div>
+    <h2>A Fixed Band Is a Mask; Top-k Is a Decision</h2>
+    <div class="fig">
+        <svg class="wide-only" viewBox="0 0 600 170" role="img" aria-label="A fixed band is an aperture in the Fourier plane before detection, free in optics; top-k needs detection, conversion, comparisons and a selection, all digital">
+            <text class="s-a" x="8" y="20">fixed band: optical</text>
+            <rect class="s-box" x="8" y="32" width="110" height="44" rx="6"/><text class="s-t" x="18" y="59">transform</text>
+            <rect class="s-acc" x="140" y="32" width="150" height="44" rx="6"/><text class="s-a" x="150" y="52">aperture in the</text><text class="s-a" x="150" y="68">Fourier plane</text>
+            <rect class="s-box" x="312" y="32" width="110" height="44" rx="6"/><text class="s-t" x="322" y="59">detect band</text>
+            <path class="s-line" d="M118 54 H136 M290 54 H308"/>
+            <text class="s-d" x="440" y="52">same bins for every input:</text><text class="s-d" x="440" y="68">no decision, free</text>
+            <text class="s-a" x="8" y="108" style="fill: var(--c-orange)">top-k: digital</text>
+            <rect class="s-box" x="8" y="120" width="110" height="44" rx="6"/><text class="s-t" x="18" y="147">transform</text>
+            <rect class="s-box" x="140" y="120" width="110" height="44" rx="6"/><text class="s-t" x="150" y="147">detect all</text>
+            <rect class="s-box" x="272" y="120" width="70" height="44" rx="6"/><text class="s-t" x="282" y="147">ADC</text>
+            <rect class="s-box" x="364" y="120" width="120" height="44" rx="6" style="stroke: var(--c-orange)"/><text class="s-t" x="374" y="140">compare,</text><text class="s-t" x="374" y="156">select k</text>
+            <path class="s-line" d="M118 142 H136 M250 142 H268 M342 142 H360"/>
+            <text class="s-d" x="494" y="140">bins depend</text><text class="s-d" x="494" y="156">on the data</text>
+        </svg>
+        <svg class="narrow-only" viewBox="0 0 300 330" role="img" aria-label="Left column, fixed band: transform, aperture in the Fourier plane, detect the band. Right column, top-k: transform, detect all, ADC, compare and select">
+            <text class="s-a" x="4" y="18">fixed band</text><text class="s-a" x="156" y="18" style="fill: var(--c-orange)">top-k</text>
+            <rect class="s-box" x="4" y="30" width="140" height="44" rx="6"/><text class="s-t" x="14" y="57">transform</text>
+            <rect class="s-acc" x="4" y="94" width="140" height="58" rx="6"/><text class="s-a" x="14" y="118">aperture in</text><text class="s-a" x="14" y="136">Fourier plane</text>
+            <rect class="s-box" x="4" y="172" width="140" height="44" rx="6"/><text class="s-t" x="14" y="199">detect band</text>
+            <path class="s-line" d="M74 74 V90 M74 152 V168"/>
+            <text class="s-d" x="4" y="240">same bins every</text><text class="s-d" x="4" y="258">time: free</text>
+            <rect class="s-box" x="156" y="30" width="140" height="44" rx="6"/><text class="s-t" x="166" y="57">transform</text>
+            <rect class="s-box" x="156" y="94" width="140" height="44" rx="6"/><text class="s-t" x="166" y="121">detect all</text>
+            <rect class="s-box" x="156" y="158" width="140" height="44" rx="6"/><text class="s-t" x="166" y="185">ADC</text>
+            <rect class="s-box" x="156" y="222" width="140" height="58" rx="6" style="stroke: var(--c-orange)"/><text class="s-t" x="166" y="246">compare,</text><text class="s-t" x="166" y="264">select k</text>
+            <path class="s-line" d="M226 74 V90 M226 138 V154 M226 202 V218"/>
+            <text class="s-d" x="156" y="304">bins depend on</text><text class="s-d" x="156" y="322">the data</text>
+        </svg>
+    </div>
+    <div class="fig" id="anim-band">
+        <canvas id="cv-band" aria-label="Animation over successive data chunks: the fixed low band keeps the same four bins every time; top-k picks the four largest bins, which move with the data"></canvas>
+        <p class="fig-cap">Successive 64-sample chunks of a smooth random signal (<code>chunk</code>), their bin energies, and two ways to keep k = 4 bins: the fixed low band (shaded: the same aperture every time) and top-k (orange: wherever the energy is). Top-k captures at least as much energy on every chunk (checked), but finding it needs every bin detected and compared.</p>
+    </div>
+    <ul>
+        <li><strong>A fixed band</strong> is a fixed aperture, so in optics it is free: no comparisons, no data-dependent control, which matches the module's operation set (<a href="#slide-08c">slide 08c</a>).</li>
+        <li><strong>Top-k depends on the data</strong>, so it needs every coefficient detected, converted and compared: digital work after the optics.</li>
+        <li><strong>What it costs in training:</strong> in the <a href="https://brendanjameslynskey.github.io/CiT_04_Fixed_Band_Experiment/">fixed-band experiment</a> (DeMo on a 15.8M-parameter GPT, 2-D 64&times;64 chunks), the low band captured 0.013 of the momentum's energy against top-k's 0.643, and final validation loss was 3.158 ± 0.009 against 1.785 ± 0.007 for top-k (<a href="https://github.com/BrendanJamesLynskey/DeMo_Fixed_Band_Experiment/blob/b1f62d3/results/tinystories-gpu/results.md">results.md at b1f62d3</a>). The <a href="https://brendanjameslynskey.github.io/LLM_Hub_Compute_in_Transit/">Compute in Transit hub</a> has the rest.</li>
     </ul>
 </section>
 
@@ -1263,6 +1623,10 @@
 <tr><td>65,536</td><td>4.43</td><td>1.6e-01</td><td>4.0e-02</td><td>1.0e-02</td><td>2.5e-03</td><td>6.2e-04</td><td>1.6e-04</td><td>1.0e-02</td></tr>
 </tbody></table></div>
     <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;6. Analogue precision&rdquo;</p>
+    <div class="fig">
+        <canvas id="fig-enob" aria-label="Chart of the table above: relative RMS error against ENOB for three convolution lengths, log scale"></canvas>
+        <p class="fig-cap">The table above, drawn (read from the table on this slide, which is built from results.md): each 2 bits of ENOB cut the error 4&times;; longer convolutions sit slightly higher because of their crest factor.</p>
+    </div>
     <ul>
         <li>The rule predicts the measurement (last column against the ENOB 8 column). Longer convolutions have a higher crest factor, so they need slightly more bits for the same error.</li>
         <li><strong>FHE needs exactness, which is much harder</strong> (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-03">FHESim 04, route 1</a>). Exact rounding, by FHESim 04's rule 2^(ENOB-1) &gt; d n (2^b - 1)^2 with 8-bit inputs and filters in 1-bit digits (d = 8, the most forgiving split; n = products summed per output), needs ENOB 9 for L = 16; ENOB 17 for L = 4,096; ENOB 21 for L = 65,536: feasible for FHE's 16-point blocks, not for sequence-length convolutions, so float workloads use the noise rule above instead.</li>
@@ -1290,11 +1654,31 @@
 <tr><td>65,536</td><td>1.0e-02</td><td>5.0e-03</td><td>2.5e-03</td><td>9.9e-03</td></tr>
 </tbody></table></div>
     <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;6. Analogue precision&rdquo;</p>
+    <div class="fig">
+        <canvas id="fig-buy" aria-label="Two charts from the tables above: the ENOB each number format needs, and the error after averaging 1, 4 and 16 passes or using digit planes"></canvas>
+        <p class="fig-cap">Left: ENOB to match each format (first table), against the 8 effective bits this series assumes for the analogue chain (illustrative). Right: error at ENOB 8 for length 4,096 (second table): averaging moves it, digit planes do not.</p>
+    </div>
     <ul>
         <li><strong>Averaging works, expensively:</strong> k passes cut random noise by &radic;k, so each extra bit costs 4&times; the passes (Garg et al., <a href="https://arxiv.org/abs/2102.06365">arXiv:2102.06365</a>, who choose precision per layer). Reaching BF16's error from ENOB 8 takes 26 passes (first table, last column).</li>
         <li><strong>Digit planes do not help floats.</strong> They make FHE's integer arithmetic exact by shrinking each plane's values (<a href="https://brendanjameslynskey.github.io/FHESim_04_Optical_NTT_Engines/#slide-03">FHESim 04, route 1</a>), but for a float workload the top plane carries nearly all of the signal and is read at the same ENOB relative to its own peak.</li>
         <li><strong>FP8 and INT8 inference</strong> sit within reach of an 8-bit analogue chain; BF16 does not.</li>
+        <li><strong>Binary input is different:</strong> when each plane is a 0/1 pattern and the result must be an exact integer, a plane only needs reading well enough to round. <a href="#slide-10b">Slide 10b</a> animates it.</li>
     </ul>
+</section>
+
+<section class="slide" id="slide-10b">
+    <div class="slide-number">10b</div>
+    <h2>Binary Input and Bit Planes</h2>
+    <p>A link module that accepts only binary (NRZ) input (<a href="#slide-08c">slide 08c</a>) must feed a multi-bit value as bit planes: plane b holds bit b of every value, each plane goes through the same transform, and the outputs are recombined with weights 2<sup>b</sup>. Linearity makes that exact: T(x) = &Sigma;<sub>b</sub> 2<sup>b</sup> T(x<sub>b</sub>).</p>
+    <div class="fig" id="anim-planes">
+        <div class="control-row"><label for="bp-sigma">Readout noise &sigma; (output units)</label><input type="range" id="bp-sigma" min="0.05" max="1" step="0.05" value="0.15"><span class="val" id="bp-sigma-val">0.15</span></div>
+        <canvas id="cv-planes" aria-label="Bit-plane animation: eight 8-bit values split into planes; each plane is convolved with an integer kernel, read with noise and rounded, weighted by 2 to the b and accumulated; the result is compared with the exact convolution and reduced mod 257"></canvas>
+        <p class="fig-cap">Eight 8-bit inputs, a known integer transform (cyclic convolution with kernel h = [3, 1, 4, 1, 5, 9, 2, 6], which a 4f system or an FFT computes), and Gaussian readout noise &sigma; per plane (<code>bitPlaneRun</code>). Each plane's outputs are integers from 0 to &Sigma;h = 31, so rounding them needs only about 5 bits of clean readout, while the full result spans 13 bits. As &sigma; grows towards a quarter of an output unit, rounding starts to fail and the recombined result is wrong; the panel counts the wrong outputs.</p>
+    </div>
+    <div class="callout">
+        <div class="callout-label"><span class="src-tag inference">inference</span> &nbsp;not stated in the paper</div>
+        <p>With binary input and a known transform, each plane's output only needs reading accurately enough to round. Add error correction and modular arithmetic in the FPGA, and that is a plausible way an exact NTT can run on analogue optics. This is the deck's reading of the published parts list, not a description from the paper. It also shows why the same trick does not help floats (<a href="#slide-10">slide 10</a>): there the result is not an integer to round to.</p>
+    </div>
 </section>
 
 <section class="slide" id="slide-11">
@@ -1316,6 +1700,7 @@
 <tr><td>16</td><td>655.36</td><td>1,310.72</td><td>1,966.08</td></tr>
 </tbody></table></div>
     <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;7. Conversion energy&rdquo;</p>
+            <div class="fig"><canvas id="fig-conv" aria-label="Chart of the table: DAC plus ADC energy per value against ENOB, log scale, doubling per bit"></canvas><p class="fig-cap">The pair column above, drawn: each bit doubles it.</p></div>
         </div>
         <div class="diagram-panel accent-border">
             <h4>Static power never sleeps</h4>
@@ -1336,6 +1721,24 @@
 <section class="slide" id="slide-12">
     <div class="slide-number">12</div>
     <h2>What Optics Gives and What It Costs</h2>
+    <div class="fig">
+        <svg class="wide-only" viewBox="0 0 600 210" role="img" aria-label="A balance: on one side what optics gives (a transform with no operation count, parallelism, a free convolution), on the other what it costs (conversions, precision, mask rewrites, phase, static power)">
+            <path d="M300 40 L300 190 M240 190 H360" class="s-line" style="stroke-width: 3"/>
+            <path d="M80 60 L520 40" class="s-line" style="stroke-width: 3"/>
+            <circle cx="300" cy="50" r="6" style="fill: var(--text-secondary)"/>
+            <path d="M80 60 L40 110 M80 60 L120 110 M520 40 L480 90 M520 40 L560 90" class="s-line"/>
+            <rect class="s-acc" x="8" y="110" width="180" height="92" rx="6"/><text class="s-a" x="18" y="132">gives</text><text class="s-d" x="18" y="152">transform: time of flight</text><text class="s-d" x="18" y="170">parallel 1-D or 2-D</text><text class="s-d" x="18" y="188">convolution via a mask</text>
+            <rect class="s-box" x="404" y="90" width="190" height="112" rx="6" style="stroke: var(--c-orange)"/><text x="414" y="112" style="fill: var(--c-orange); font-size: 14px">costs</text><text class="s-d" x="414" y="132">a DAC + ADC per value</text><text class="s-d" x="414" y="150">analogue precision</text><text class="s-d" x="414" y="168">mask rewrites, phase</text><text class="s-d" x="414" y="186">static power</text>
+        </svg>
+        <svg class="narrow-only" viewBox="0 0 300 250" role="img" aria-label="A balance tipped towards the costs: conversions, precision, mask rewrites, phase and static power, against the gains">
+            <path d="M150 30 V240 M110 240 H190" class="s-line" style="stroke-width: 3"/>
+            <path d="M40 50 L260 26" class="s-line" style="stroke-width: 3"/><circle cx="150" cy="38" r="5" style="fill: var(--text-secondary)"/>
+            <path d="M40 50 L20 80 M40 50 L60 80 M260 26 L240 56 M260 26 L280 56" class="s-line"/>
+            <rect class="s-acc" x="4" y="84" width="138" height="120" rx="6"/><text class="s-a" x="12" y="104">gives</text><text class="s-d" x="12" y="124">transform by</text><text class="s-d" x="12" y="140">time of flight</text><text class="s-d" x="12" y="160">parallel 1-D</text><text class="s-d" x="12" y="176">or 2-D</text><text class="s-d" x="12" y="196">mask convolves</text>
+            <rect class="s-box" x="158" y="60" width="138" height="150" rx="6" style="stroke: var(--c-orange)"/><text x="166" y="80" style="fill: var(--c-orange); font-size: 14px">costs</text><text class="s-d" x="166" y="100">DAC + ADC</text><text class="s-d" x="166" y="116">per value</text><text class="s-d" x="166" y="136">precision</text><text class="s-d" x="166" y="156">mask rewrites</text><text class="s-d" x="166" y="176">phase</text><text class="s-d" x="166" y="196">static power</text>
+        </svg>
+        <p class="fig-cap">The costs side is heavier unless each converted value is reused by many operations and the engine is kept busy.</p>
+    </div>
     <div class="table-wrap">
     <table>
         <tr><th>Property</th><th>Free-space 4f engine</th><th>What it means for a workload</th></tr>
@@ -1354,15 +1757,1093 @@
 <section class="slide" id="slide-13">
     <div class="slide-number">13</div>
     <h2>What to Take Away</h2>
+    <div class="fig map">
+        <svg class="wide-only" viewBox="0 0 600 200" role="img" aria-label="The signal path of the whole deck in one line: data in, modulator, lens and Fourier plane, detector, ADC and digital logic, each with its lesson">
+            <a href="#slide-06"><rect class="s-box" x="6" y="20" width="104" height="64" rx="6"/><text class="s-t" x="16" y="46">modulate</text><text class="s-d" x="16" y="66">pay per value</text></a>
+            <a href="#slide-02b"><rect class="s-acc" x="128" y="20" width="104" height="64" rx="6"/><text class="s-a" x="138" y="46">lens</text><text class="s-d" x="138" y="66">x = &lambda; f u</text></a>
+            <a href="#slide-08e"><rect class="s-box" x="250" y="20" width="104" height="64" rx="6"/><text class="s-t" x="260" y="46">mask</text><text class="s-d" x="260" y="66">fixed: free</text></a>
+            <a href="#slide-07b"><rect class="s-box" x="372" y="20" width="104" height="64" rx="6"/><text class="s-t" x="382" y="46">detect</text><text class="s-d" x="382" y="66">|E|&sup2; or I/Q</text></a>
+            <a href="#slide-10b"><rect class="s-box" x="494" y="20" width="100" height="64" rx="6"/><text class="s-t" x="504" y="46">digital</text><text class="s-d" x="504" y="66">round, mod</text></a>
+            <path class="s-line" d="M110 52 H124 M232 52 H246 M354 52 H368 M476 52 H490"/>
+            <text class="s-d" x="6" y="122">precision: a noise level for floats,</text><text class="s-d" x="6" y="140">rounding for binary planes</text>
+            <text class="s-d" x="320" y="122">fibre: bits in time, one mode;</text><text class="s-d" x="320" y="140">filter before the wire, not on it</text>
+            <path d="M6 170 H594" style="stroke: var(--c-orange); stroke-width: 5"/><text x="6" y="192" style="fill: var(--c-orange); font-size: 12px">the bill: conversions and static power, paid at the edges</text>
+        </svg>
+        <svg class="narrow-only" viewBox="0 0 300 338" role="img" aria-label="The deck's signal path top to bottom: modulate, lens, mask, detect, digital, with the bill paid at the edges">
+            <a href="#slide-06"><rect class="s-box" x="4" y="4" width="292" height="44" rx="6"/><text class="s-t" x="14" y="31">modulate</text><text class="s-d" x="140" y="31">pay per value</text></a>
+            <a href="#slide-02b"><rect class="s-acc" x="4" y="58" width="292" height="44" rx="6"/><text class="s-a" x="14" y="85">lens</text><text class="s-d" x="140" y="85">x = &lambda; f u</text></a>
+            <a href="#slide-08e"><rect class="s-box" x="4" y="112" width="292" height="44" rx="6"/><text class="s-t" x="14" y="139">mask</text><text class="s-d" x="140" y="139">fixed: free</text></a>
+            <a href="#slide-07b"><rect class="s-box" x="4" y="166" width="292" height="44" rx="6"/><text class="s-t" x="14" y="193">detect</text><text class="s-d" x="140" y="193">|E|&sup2; or I/Q</text></a>
+            <a href="#slide-10b"><rect class="s-box" x="4" y="220" width="292" height="44" rx="6"/><text class="s-t" x="14" y="247">digital</text><text class="s-d" x="140" y="247">round, mod</text></a>
+            <path d="M4 290 H296" style="stroke: var(--c-orange); stroke-width: 5"/><text x="4" y="312" style="fill: var(--c-orange); font-size: 12px">the bill: conversions and static</text><text x="4" y="328" style="fill: var(--c-orange); font-size: 12px">power, paid at the edges</text>
+        </svg>
+    </div>
     <ul>
-        <li><strong>A lens is a Fourier transformer; two lenses and a mask are a convolver.</strong> The transform is free; the mask holds the weights.</li>
+        <li><strong>A lens is a Fourier transformer; two lenses and a mask are a convolver.</strong> The transform is free; the mask holds the weights. The spectrum sits one focal length behind the lens, at x = &lambda;fu, so the light must be one wavelength and collimated (<a href="#slide-02b">02b</a>, <a href="#slide-02c">02c</a>).</li>
         <li><strong>FFT convolution is circular</strong> unless zero-padded to twice the length, which is what makes it causal (the interactive, <a href="#slide-04">slide 04</a>).</li>
-        <li><strong>Detectors see intensity:</strong> sign and phase need coherent detection, a bias, split passes or retrieval.</li>
-        <li><strong>Float workloads need a noise level, not exactness:</strong> about 8.0 ENOB for INT8-like error and 10.3 for BF16-like; averaging buys bits at 4&times; passes per bit, and digit planes do not help.</li>
+        <li><strong>Detectors see intensity:</strong> sign and phase need coherent detection, a bias, split passes or retrieval. Balanced photodiodes against a local oscillator read the real and imaginary parts directly; a pixelated detector reads a DFT whose DC term eats the dynamic range (<a href="#slide-07b">07b</a>).</li>
+        <li><strong>On a chip the transform is 1-D</strong>: a slab lens samples a continuous transform, a butterfly mesh computes an exact DFT; throughput is the modulator clock times the channels (<a href="#slide-08b">08b</a>). A real link module does it with four binary-input channels and coherent detection, and reports no precision, latency or energy per operation (<a href="#slide-08c">08c</a>).</li>
+        <li><strong>The fibre is a different domain:</strong> its spectrum is the bits', so filtering it causes inter-symbol interference; to save link time, transform and keep the band before the wire. A fixed band is a free mask, top-k a digital decision (<a href="#slide-08d">08d</a>, <a href="#slide-08e">08e</a>).</li>
+        <li><strong>Float workloads need a noise level, not exactness:</strong> about 8.0 ENOB for INT8-like error and 10.3 for BF16-like; averaging buys bits at 4&times; passes per bit, and digit planes do not help. Exact integer results are a different game: binary planes need only be read well enough to round (<a href="#slide-10b">10b</a>, an inference).</li>
         <li><strong>Conversions and static power are the bill.</strong> Optics pays only when each converted value is reused by many operations and the engine is kept busy.</li>
         <li><strong>Next:</strong> <a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/">deck 02</a> asks where LLM inference has transforms to offer, and how much of the work they are.</li>
     </ul>
 </section>
+
+<script>
+// FOptInf 01: the pure model functions behind every figure and animation in the deck.
+// Each animation frame is drawn from these (an actual FFT, actual ray transfer, actual bit-plane arithmetic),
+// never hand-keyframed. Checked by js/test_fop01_models.js (node) and by browser_check.js in the page.
+(function (root) {
+    'use strict';
+    // seeded PRNG (mulberry32) and a Gaussian, so every figure is reproducible
+    function rng(a) {
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+    function gauss(r) { return Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r()); }
+
+    // in-place iterative radix-2 complex FFT; inv divides by n
+    function fft(re, im, inv) {
+        const n = re.length;
+        for (let i = 1, j = 0; i < n; i++) {
+            let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit;
+            if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; }
+        }
+        for (let len = 2; len <= n; len <<= 1) {
+            const a = (inv ? 2 : -2) * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
+            for (let i = 0; i < n; i += len) {
+                let cr = 1, ci = 0;
+                for (let k = 0; k < len / 2; k++) {
+                    const p = i + k, q = p + len / 2;
+                    const vr = re[q] * cr - im[q] * ci, vi = re[q] * ci + im[q] * cr;
+                    re[q] = re[p] - vr; im[q] = im[p] - vi; re[p] += vr; im[p] += vi;
+                    const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr;
+                }
+            }
+        }
+        if (inv) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+    }
+    // the O(N^2) definition, for checks
+    function dft(re, im) {
+        const n = re.length, R = new Float64Array(n), I = new Float64Array(n);
+        for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) {
+            const a = -2 * Math.PI * k * j / n, c = Math.cos(a), s = Math.sin(a);
+            R[k] += re[j] * c - im[j] * s; I[k] += re[j] * s + im[j] * c;
+        }
+        return { re: R, im: I };
+    }
+    // 2-D FFT of an n x n row-major array (rows then columns), in place
+    function fft2(re, im, n, inv) {
+        const rr = new Float64Array(n), ri = new Float64Array(n);
+        for (let y = 0; y < n; y++) {
+            rr.set(re.subarray(y * n, y * n + n)); ri.set(im.subarray(y * n, y * n + n));
+            fft(rr, ri, inv); re.set(rr, y * n); im.set(ri, y * n);
+        }
+        for (let x = 0; x < n; x++) {
+            for (let y = 0; y < n; y++) { rr[y] = re[y * n + x]; ri[y] = im[y * n + x]; }
+            fft(rr, ri, inv);
+            for (let y = 0; y < n; y++) { re[y * n + x] = rr[y]; im[y * n + x] = ri[y]; }
+        }
+    }
+    // swap quadrants so frequency zero sits in the middle (what a lens shows: DC on the axis)
+    function fftshift2(a, n) {
+        const out = new Float64Array(n * n), h = n >> 1;
+        for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) out[((y + h) % n) * n + (x + h) % n] = a[y * n + x];
+        return out;
+    }
+
+    // ── 1. Where the Fourier plane is ────────────────────────────────────
+    // A plane-wave component of spatial frequency u leaves the input at sin(theta) = lambda u and lands at
+    // x = f tan(theta) in lens 1's back focal plane; paraxially x = lambda f u.
+    function fourierX(u, lambda, f) { return lambda * f * u; }
+    function fourierXExact(u, lambda, f) { const s = lambda * u; return f * s / Math.sqrt(1 - s * s); }
+    // Paraxial ray transfer through a 4f system: a ray at height y0 with slope s, traced plane by plane
+    // (input, lens 1, Fourier plane, lens 2, output). Thin lens: s' = s - y / f.
+    function trace4f(y0, s, f) {
+        const pts = [[0, y0]];
+        let y = y0 + f * s;            pts.push([f, y]);      // at lens 1
+        s = s - y / f; y = y + f * s;  pts.push([2 * f, y]);  // Fourier plane: y = f * s0 for every y0
+        y = y + f * s;                 pts.push([3 * f, y]);  // at lens 2
+        s = s - y / f; y = y + f * s;  pts.push([4 * f, y]);  // output: y = -y0 (inverted)
+        return { pts, sOut: s };
+    }
+
+    // ── 2. Scale and coherence ───────────────────────────────────────────
+    // A finite amplitude grating (period p, duty 1/2) sampled at dx; its far-field intensity is |DFT|^2.
+    function grating(n, samplesPerPeriod, periods) {
+        const a = new Float64Array(n), start = (n - samplesPerPeriod * periods) >> 1;
+        for (let i = 0; i < samplesPerPeriod * periods; i++) a[start + i] = (i % samplesPerPeriod) < samplesPerPeriod / 2 ? 1 : 0;
+        return a;
+    }
+    function powerSpectrum(a) {
+        const re = Float64Array.from(a), im = new Float64Array(a.length);
+        fft(re, im, false);
+        const p = new Float64Array(a.length);
+        for (let k = 0; k < a.length; k++) p[k] = re[k] * re[k] + im[k] * im[k];
+        return p;
+    }
+    // Intensity at detector position x for wavelength lambda: spatial frequency u = x / (lambda f), read from the
+    // power spectrum by linear interpolation between bins (bin k is u = k / (n dx), negative k wraps).
+    function intensityAt(ps, dx, lambda, f, x) {
+        const n = ps.length, kf = x / (lambda * f) * n * dx;
+        if (Math.abs(kf) >= n / 2 - 1) return 0;
+        const k0 = Math.floor(kf), w = kf - k0, idx = k => ((k % n) + n) % n;
+        return ps[idx(k0)] * (1 - w) + ps[idx(k0 + 1)] * w;
+    }
+    // several wavelengths at once: intensities add (each colour makes its own, differently scaled, pattern)
+    function multiIntensity(ps, dx, lambdas, f, x) { let s = 0; for (const l of lambdas) s += intensityAt(ps, dx, l, f, x); return s; }
+
+    // ── 3. Pixels, the DFT and what a detector reads ─────────────────────
+    // Continuous FT of a row of N square pixels (pitch d = 1) at spatial frequency u (cycles per pixel):
+    // F(u) = sinc(u) * sum_n x_n exp(-i 2 pi u n). Sampled at u = k / N it is sinc(k/N) times the DFT.
+    function sinc(t) { return t === 0 ? 1 : Math.sin(Math.PI * t) / (Math.PI * t); }
+    function pixelFT(x, u) {
+        let r = 0, i = 0;
+        for (let n = 0; n < x.length; n++) { const a = -2 * Math.PI * u * n; r += x[n] * Math.cos(a); i += x[n] * Math.sin(a); }
+        const s = sinc(u); return { re: r * s, im: i * s };
+    }
+    // Balanced (coherent) detection: a 50:50 coupler mixes the signal field E with a local oscillator
+    // L exp(i phi); two photodiodes read |E + LO|^2 / 2 and |E - LO|^2 / 2; their difference is 2 Re(E LO*),
+    // linear in E, so sign survives. phi = 0 reads Re E, phi = pi/2 reads Im E.
+    function balanced(er, ei, L, phi) {
+        const lr = L * Math.cos(phi), li = L * Math.sin(phi);
+        const ia = ((er + lr) ** 2 + (ei + li) ** 2) / 2, ib = ((er - lr) ** 2 + (ei - li) ** 2) / 2;
+        return { ia, ib, diff: ia - ib, camera: er * er + ei * ei };
+    }
+    // two equal beams with relative phase phi: coherent light adds fields, incoherent adds intensities
+    function twoBeam(phi) { return { coherent: (1 + Math.cos(phi)) ** 2 + Math.sin(phi) ** 2, incoherent: 2 }; }
+
+    // ── 4. On-chip: slab lens and butterfly mesh ─────────────────────────
+    // Ideal slab ("on-chip lens"): N input waveguides at positions n feed a free-propagation region whose output
+    // arc carries the continuous transform; output waveguide k samples it at x = k, giving the DFT exactly.
+    function slabField(ar, ai, x) {
+        const n = ar.length; let r = 0, i = 0;
+        for (let j = 0; j < n; j++) { const a = -2 * Math.PI * j * x / n, c = Math.cos(a), s = Math.sin(a); r += ar[j] * c - ai[j] * s; i += ar[j] * s + ai[j] * c; }
+        return { re: r, im: i };
+    }
+    // Radix-2 decimation-in-time FFT kept stage by stage: the vectors a mesh of 2x2 couplers and fixed phase
+    // shifters (butterflies) holds after the input permutation and after each of the log2 N layers.
+    function fftStages(re0, im0) {
+        const n = re0.length, re = Float64Array.from(re0), im = Float64Array.from(im0), perm = [];
+        for (let i = 0; i < n; i++) { let r = 0; for (let b = 1, k = i; b < n; b <<= 1, k >>= 1) r = (r << 1) | (k & 1); perm.push(r); }
+        const pr = perm.map(p => re0[p]), pi = perm.map(p => im0[p]);
+        re.set(pr); im.set(pi);
+        const stages = [{ re: Float64Array.from(re), im: Float64Array.from(im), pairs: [] }];
+        for (let len = 2; len <= n; len <<= 1) {
+            const pairs = [];
+            for (let i = 0; i < n; i += len) for (let k = 0; k < len / 2; k++) {
+                const p = i + k, q = p + len / 2, a = -2 * Math.PI * k / len, c = Math.cos(a), s = Math.sin(a);
+                const vr = re[q] * c - im[q] * s, vi = re[q] * s + im[q] * c;
+                re[q] = re[p] - vr; im[q] = im[p] - vi; re[p] += vr; im[p] += vi; pairs.push([p, q, k, len]);
+            }
+            stages.push({ re: Float64Array.from(re), im: Float64Array.from(im), pairs });
+        }
+        return { perm, stages };
+    }
+
+    // ── 5. The link module's numbers ─────────────────────────────────────
+    // Derived, not reported: channels x symbol rate x bits per symbol, in bytes per second.
+    function opticsRateGBps(channels, gbaud, bitsPerSymbol) { return channels * gbaud * bitsPerSymbol / 8; }
+    // radix-r decomposition: a 65,536-point transform as 256 x 256; each 256-point transform as 4 radix-4 stages
+    function radixStages(n, r) { let s = 0; while (n > 1) { if (n % r) return NaN; n /= r; s++; } return s; }
+
+    // ── 6. Binary input and bit planes ───────────────────────────────────
+    // Split unsigned B-bit values into B binary planes, push each plane through the same known integer transform
+    // (here a cyclic convolution with an integer kernel, what a 4f system computes), read each plane's output with
+    // analogue noise sigma (in output units) and round, then recombine with weights 2^b.
+    function bitPlanes(x, B) { const P = []; for (let b = 0; b < B; b++) P.push(x.map(v => (v >> b) & 1)); return P; }
+    function cyclicConv(x, h) {
+        const n = x.length, y = new Array(n).fill(0);
+        for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) y[i] += h[j] * x[(i - j + n) % n];
+        return y;
+    }
+    function readPlane(y, sigma, r) { return y.map(v => Math.round(v + sigma * gauss(r))); }
+    function recombine(planesOut) {
+        const n = planesOut[0].length, out = new Array(n).fill(0);
+        planesOut.forEach((p, b) => { for (let i = 0; i < n; i++) out[i] += p[i] * 2 ** b; });
+        return out;
+    }
+    function bitPlaneRun(x, h, B, sigma, seed) {
+        const r = rng(seed), planes = bitPlanes(x, B), ideal = planes.map(p => cyclicConv(p, h));
+        const read = ideal.map(y => readPlane(y, sigma, r));
+        const out = recombine(read), exact = cyclicConv(x, h);
+        return { planes, ideal, read, out, exact, errors: out.filter((v, i) => v !== exact[i]).length };
+    }
+
+    // ── 7. NRZ on a fibre, filtered ──────────────────────────────────────
+    function prbs(nbits, seed) { const r = rng(seed); return Array.from({ length: nbits }, () => r() < 0.5 ? 0 : 1); }
+    function nrz(bits, sps) { const s = new Float64Array(bits.length * sps); bits.forEach((b, i) => s.fill(b, i * sps, i * sps + sps)); return s; }
+    // a Fourier-plane mask on the time signal: keep |frequency| <= cutoff (in units of the bit rate)
+    function lowpass(sig, sps, cutoff) {
+        const n = sig.length, re = Float64Array.from(sig), im = new Float64Array(n);
+        fft(re, im, false);
+        for (let k = 0; k < n; k++) { const fr = Math.min(k, n - k) / n * sps; if (fr > cutoff) { re[k] = 0; im[k] = 0; } }
+        fft(re, im, true);
+        return re;
+    }
+    // vertical eye opening at the bit centres and the decision errors at threshold 1/2
+    function eye(sig, bits, sps) {
+        let lo1 = Infinity, hi0 = -Infinity, errors = 0;
+        bits.forEach((b, i) => {
+            const v = sig[i * sps + (sps >> 1)];
+            if (b) lo1 = Math.min(lo1, v); else hi0 = Math.max(hi0, v);
+            if ((v > 0.5 ? 1 : 0) !== b) errors++;
+        });
+        return { opening: lo1 - hi0, errors };
+    }
+    // one flipped bit in a float32 word
+    function flipFloat32Bit(v, bit) {
+        const dv = new DataView(new ArrayBuffer(4)); dv.setFloat32(0, v); dv.setUint32(0, dv.getUint32(0) ^ (1 << bit) >>> 0); return dv.getFloat32(0);
+    }
+
+    // ── 8. A fixed band against top-k ────────────────────────────────────
+    // A smooth random vector (sum of a few random tones plus noise): one "momentum" chunk.
+    function chunk(n, seed) {
+        const r = rng(seed), x = new Float64Array(n);
+        for (let t = 0; t < 4; t++) {
+            const k = 1 + Math.floor(r() * (n / 4)), a = gauss(r) / (1 + t), ph = 2 * Math.PI * r();
+            for (let i = 0; i < n; i++) x[i] += a * Math.cos(2 * Math.PI * k * i / n + ph);
+        }
+        for (let i = 0; i < n; i++) x[i] += 0.15 * gauss(r);
+        return x;
+    }
+    // one-sided spectrum energy per bin (bins 0..n/2)
+    function binEnergy(x) {
+        const n = x.length, re = Float64Array.from(x), im = new Float64Array(n);
+        fft(re, im, false);
+        const e = [];
+        for (let k = 0; k <= n / 2; k++) e.push((re[k] ** 2 + im[k] ** 2) * (k === 0 || k === n / 2 ? 1 : 2));
+        return e;
+    }
+    function lowBand(e, k) { return Array.from({ length: k }, (_, i) => i); }   // the same bins for every input
+    function topK(e, k) { return e.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).slice(0, k).map(p => p[1]).sort((a, b) => a - b); }
+    function captured(e, idx) { const tot = e.reduce((s, v) => s + v, 0); return idx.reduce((s, i) => s + e[i], 0) / tot; }
+
+    const API = { rng, gauss, fft, dft, fft2, fftshift2, fourierX, fourierXExact, trace4f, grating, powerSpectrum, intensityAt,
+        multiIntensity, sinc, pixelFT, balanced, twoBeam, slabField, fftStages, opticsRateGBps, radixStages, bitPlanes,
+        cyclicConv, readPlane, recombine, bitPlaneRun, prbs, nrz, lowpass, eye, flipFloat32Bit, chunk, binEnergy, lowBand,
+        topK, captured };
+    if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.FOP01 = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+// FOptInf 01: one stepped-animation controller for every mechanism in the deck, plus small drawing helpers.
+// A figure supplies steps (a count), draw(step, frac) and caption(step); the controller adds play/pause, step back and
+// forward, a scrub bar, speed, reset, keyboard control (space, arrows), an aria-live caption, pauses off-screen and never
+// auto-plays under prefers-reduced-motion. window.fopAnims[id] exposes each controller to browser_check.js.
+(function () {
+    'use strict';
+    const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.fopAnims = {};
+    window.FopAnim = function (id, opts) {
+        const root = document.getElementById(id);
+        const steps = opts.steps, stepMs = opts.stepMs || 1400;
+        const bar = document.createElement('div');
+        bar.className = 'anim-controls';
+        bar.innerHTML = `<button type="button" class="btn secondary" data-a="reset" aria-label="Reset">&#8634; Reset</button>`
+            + `<button type="button" class="btn secondary" data-a="back" aria-label="Step back">&#9664; Step</button>`
+            + `<button type="button" class="btn" data-a="play" aria-label="Play">&#9654; Play</button>`
+            + `<button type="button" class="btn secondary" data-a="fwd" aria-label="Step forward">Step &#9654;</button>`
+            + `<input type="range" min="0" max="${steps - 1}" value="0" aria-label="Step">`
+            + `<select aria-label="Speed"><option value="0.25">0.25&times;</option><option value="0.5">0.5&times;</option><option value="1" selected>1&times;</option><option value="2">2&times;</option><option value="4">4&times;</option></select>`
+            + `<span class="anim-count"></span>`;
+        const cap = document.createElement('p');
+        cap.className = 'anim-caption'; cap.setAttribute('aria-live', 'polite');
+        root.appendChild(bar); root.appendChild(cap);
+        root.tabIndex = 0; root.classList.add('anim');
+        const $ = s => bar.querySelector(s), scrub = $('input'), speed = $('select'), playBtn = $('[data-a="play"]');
+        const st = { step: 0, frac: 1, playing: false, visible: false, userPaused: reduced(), last: 0, raf: 0 };
+        function render() {
+            opts.draw(st.step, st.frac);
+            scrub.value = st.step;
+            $('.anim-count').textContent = `${st.step + 1} / ${steps}`;
+            const c = opts.caption(st.step);
+            if (cap.textContent !== c) cap.textContent = c;
+        }
+        function go(s, animate) {
+            st.step = (s + steps) % steps; st.frac = animate ? 0 : 1; render();
+        }
+        function tick(ts) {
+            if (!st.playing) return;
+            const dt = st.last ? ts - st.last : 0; st.last = ts;
+            st.frac = Math.min(1, st.frac + dt * Number(speed.value) / (stepMs * 0.6));
+            if (st.frac >= 1) {
+                st.hold = (st.hold || 0) + dt * Number(speed.value);
+                if (st.hold > stepMs * 0.4) { st.hold = 0; go(st.step + 1, true); }
+            }
+            opts.draw(st.step, st.frac);
+            st.raf = requestAnimationFrame(tick);
+        }
+        function play() {
+            if (st.playing) return;
+            st.playing = true; st.last = 0; playBtn.innerHTML = '&#10074;&#10074; Pause'; playBtn.setAttribute('aria-label', 'Pause');
+            st.raf = requestAnimationFrame(tick);
+        }
+        function pause() {
+            st.playing = false; cancelAnimationFrame(st.raf); st.frac = 1; render();
+            playBtn.innerHTML = '&#9654; Play'; playBtn.setAttribute('aria-label', 'Play');
+        }
+        bar.addEventListener('click', e => {
+            const a = e.target.closest('button'); if (!a) return;
+            const k = a.dataset.a;
+            if (k === 'play') { if (st.playing) { st.userPaused = true; pause(); } else { st.userPaused = false; play(); } }
+            else { st.userPaused = true; pause(); go(k === 'reset' ? 0 : st.step + (k === 'fwd' ? 1 : -1), false); }
+        });
+        scrub.addEventListener('input', () => { st.userPaused = true; pause(); go(Number(scrub.value), false); });
+        root.addEventListener('keydown', e => {
+            if (e.target.closest('select, input')) return;
+            if (e.key === ' ') { e.preventDefault(); bar.querySelector('[data-a="play"]').click(); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); $('[data-a="fwd"]').click(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); $('[data-a="back"]').click(); }
+        });
+        if ('IntersectionObserver' in window) {
+            new IntersectionObserver(es => es.forEach(en => {
+                st.visible = en.isIntersecting;
+                if (st.visible && !st.userPaused && !reduced()) play(); else if (!st.visible && st.playing) pause();
+            }), { threshold: 0.3 }).observe(root);
+        }
+        render();
+        const api = {
+            get step() { return st.step; }, get playing() { return st.playing; }, steps,
+            caption: () => cap.textContent, set(s) { st.userPaused = true; pause(); go(s, false); return api; },
+            play() { st.userPaused = false; play(); }, pause() { st.userPaused = true; pause(); }, redraw: render,
+        };
+        window.fopAnims[id] = api;
+        return api;
+    };
+
+    // the deck's colours, read from its CSS variables so canvas and SVG match the theme
+    window.fopColor = function (name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#efe8dc';
+    };
+    // size a canvas's backing store to its CSS box (sharp on phones and retina), return context and CSS size
+    window.fopCanvas = function (cv, aspect) {
+        const w = Math.max(240, cv.clientWidth || cv.parentElement.clientWidth || 600), h = Math.round(w * aspect);
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+        cv.style.height = h + 'px';
+        const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+        return { g, w, h };
+    };
+    // the numbers in a results table already on the slide (built from results.md), for charts that cannot drift from it
+    window.fopTable = function (table) {
+        const rows = [...table.querySelectorAll('tr')].map(r => [...r.children].map(c => c.textContent.trim()));
+        return { head: rows[0], rows: rows.slice(1) };
+    };
+    window.fopNum = s => Number(String(s).replace(/,/g, ''));
+})();
+
+</script>
+<script>
+// FOptInf 01: draws every figure and animation from the model functions in fop01_models.js (window.FOP01).
+// Colours come from the deck's CSS variables. window.fopFig exposes checkable state to browser_check.js.
+(function () {
+    'use strict';
+    const M = window.FOP01, $ = id => document.getElementById(id);
+    const V = { text: '--text-primary', sec: '--text-secondary', acc: '--accent', border: '--border', card: '--bg-card', code: '--bg-code',
+                teal: '--c-teal', amber: '--c-amber', orange: '--c-orange', blue: '--c-blue', violet: '--c-violet' };
+    const col = k => window.fopColor(V[k]);
+    const SVGNS = 'http://www.w3.org/2000/svg';
+    const redraws = [];
+    window.fopFig = {};
+    function font(g, w, k) { const px = Math.max(10, Math.min(13, w / 58)) * (k || 1); g.font = `${px}px "Geist Mono", monospace`; return px; }
+    function txt(g, s, x, y, c, align) { g.fillStyle = c; g.textAlign = align || 'left'; g.fillText(s, x, y); g.textAlign = 'left'; }
+    function line(g, pts, c, w, dash) { g.strokeStyle = c; g.lineWidth = w || 1; g.setLineDash(dash || []); g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); g.setLineDash([]); }
+    function rgb(hex) { const h = hex.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function ease(t) { return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2; }
+    function svgEl(parent, tag, attrs) { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+    const fmt = (v, d) => v.toLocaleString('en-GB', { maximumFractionDigits: d, minimumFractionDigits: d });
+    // an n x n field as an image, dark-to-amber, into a box of the canvas
+    function image(g, data, n, x0, y0, size, lo, hi, tint) {
+        const off = document.createElement('canvas'); off.width = n; off.height = n;
+        const og = off.getContext('2d'), im = og.createImageData(n, n), bg = rgb(col('card')), fg = rgb(tint || col('amber'));
+        for (let i = 0; i < n * n; i++) {
+            const v = Math.max(0, Math.min(1, (data[i] - lo) / ((hi - lo) || 1)));
+            for (let c = 0; c < 3; c++) im.data[4 * i + c] = bg[c] + v * (fg[c] - bg[c]);
+            im.data[4 * i + 3] = 255;
+        }
+        og.putImageData(im, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(off, x0, y0, size, size);
+        g.strokeStyle = col('border'); g.lineWidth = 1; g.strokeRect(x0, y0, size, size);
+    }
+    function logSpec(re, im, n, dec) {
+        const a = new Float64Array(n * n); for (let i = 0; i < n * n; i++) a[i] = Math.log10(1e-9 + re[i] * re[i] + im[i] * im[i]);
+        const s = M.fftshift2(a, n); let hi = -Infinity; for (const v of s) hi = Math.max(hi, v);
+        return { data: s, lo: hi - (dec || 6), hi };
+    }
+
+    // ── slide 02: aperture -> back focal plane ──────────────────────────
+    function aperture(kind, n) {
+        const a = new Float64Array(n * n), c = n / 2;
+        for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+            const dx = x - c + 0.5, dy = y - c + 0.5; let v = 0;
+            if (kind === 'square') v = Math.abs(dx) < 8 && Math.abs(dy) < 8;
+            else if (kind === 'circle') v = Math.hypot(dx, dy) < 10;
+            else if (kind === 'slits') v = Math.abs(dy) < 24 && (Math.abs(dx - 8) < 2 || Math.abs(dx + 8) < 2);
+            else if (kind === 'grating') v = Math.hypot(dx, dy) < 40 && (((x >> 2) & 1) === 0);
+            else { v = (x >= 20 && x < 44 && y >= 24 && y < 48) || (Math.hypot(x - 84, y - 36) > 9 && Math.hypot(x - 84, y - 36) < 14) || (Math.abs(x - y) < 3 && y > 70 && y < 110); }
+            a[y * n + x] = v ? 1 : 0;
+        }
+        return a;
+    }
+    function drawAperture() {
+        const cv = $('fig-aperture'); if (!cv) return;
+        const { g, w, h } = window.fopCanvas(cv, 0.5), n = 128, kind = $('ap-kind').value, a = aperture(kind, n);
+        const re = Float64Array.from(a), im = new Float64Array(n * n); M.fft2(re, im, n, false);
+        const L = logSpec(re, im, n), size = Math.min(h - 34, w / 2 - 30), px = font(g, w);
+        const x1 = w / 4 - size / 2, x2 = 3 * w / 4 - size / 2;
+        image(g, a, n, x1, 6, size, 0, 1, col('text'));
+        image(g, L.data, n, x2, 6, size, L.lo, L.hi);
+        txt(g, 'front focal plane: U0', w / 4, 6 + size + px + 6, col('sec'), 'center');
+        txt(g, 'back focal plane: log |Uf|²', 3 * w / 4, 6 + size + px + 6, col('sec'), 'center');
+        line(g, [[x1 + size + 6, 6 + size / 2], [x2 - 6, 6 + size / 2]], col('acc'), 2);
+        txt(g, 'lens', w / 2, 6 + size / 2 - 6, col('acc'), 'center');
+        window.fopFig.aperture = { kind, dc: re[0], sum: a.reduce((s, v) => s + v, 0) };
+    }
+    if ($('ap-kind')) { $('ap-kind').addEventListener('input', drawAperture); drawAperture(); redraws.push(drawAperture); }
+
+    // ── slide 02b: 2f and 4f, plane-wave components ─────────────────────
+    if ($('anim-2f')) {
+        const ks = [-2, -1, 0, 1, 2], s0 = 0.14, ys = [-0.32, -0.16, 0, 0.16, 0.32];
+        const hues = ['blue', 'teal', 'acc', 'amber', 'orange'];
+        const Z = [0, 1, 1.5, 2, 2, 3, 4, 4];
+        const CAP = [
+            'The input: a grating. Its field is a sum of plane waves, one per spatial frequency u = k·u0, each leaving at its own angle (sin θ = λu).',
+            'The components travel one focal length to lens 1, still overlapping: at the lens they are all mixed together.',
+            'Lens 1 bends every ray by its height (s → s − y/f): each component starts converging.',
+            'One focal length behind the lens, each component has focused to its own point, x = f·tan θ ≈ λ f u. This is the Fourier plane: the spectrum, one spot per frequency.',
+            '2f system: stop here. A camera reads the spectrum (|F|²); a mask placed here multiplies it, frequency by frequency.',
+            '4f: the light carries on, spreading again towards lens 2.',
+            'Lens 2 recollimates each component: a second forward transform.',
+            'Output plane: the input comes back mirrored (y → −y), multiplied by whatever the mask did. Every ray of slope s left the Fourier plane at height f·s, whatever its start.',
+        ];
+        function draw(step, frac) {
+            const cv = $('cv-2f'), { g, w, h } = window.fopCanvas(cv, cv.clientWidth < 560 ? 0.95 : 0.5), px = font(g, w);
+            const zPrev = step ? Z[step - 1] : 0, z = lerp(zPrev, Z[step], ease(frac));
+            const X = zz => 20 + zz / 4 * (w - 40), top = 4 * px + 10, Y = yy => (top + h - px - 10) / 2 - yy * (h - px - 10 - top) / 1.7;
+            line(g, [[X(0), Y(0)], [X(4), Y(0)]], col('border'), 1, [3, 3]);
+            // planes and lenses
+            [[0, 'input', 'sec'], [2, 'Fourier plane', 'acc'], [4, 'output', 'sec']].forEach(([zz, s, c]) => { line(g, [[X(zz), Y(0.78)], [X(zz), Y(-0.78)]], col(c), zz === 2 ? 2.5 : 1.5); txt(g, s, X(zz), h - 6, col(c), zz === 0 ? 'left' : zz === 4 ? 'right' : 'center'); });
+            [1, 3].forEach((zz, i) => { g.fillStyle = 'rgba(151,205,198,0.15)'; g.strokeStyle = col('teal'); g.beginPath(); g.ellipse(X(zz), Y(0), 7, Y(-0.8) - Y(0), 0, 0, 2 * Math.PI); g.fill(); g.stroke(); txt(g, `lens ${i + 1}`, X(zz), h - 6, col('teal'), 'center'); });
+            // f markers and the 2f / 4f brackets
+            for (let i = 0; i < 4; i++) txt(g, 'f', (X(i) + X(i + 1)) / 2, px + 2, col('sec'), 'center');
+            const b2 = 2 * px + 8, b4 = 3.5 * px + 10;
+            line(g, [[X(0), b2], [X(2), b2]], step >= 3 ? col('acc') : col('border'), 2);
+            line(g, [[X(0), b4], [X(4), b4]], step >= 6 ? col('acc') : col('border'), 2);
+            txt(g, '2f system', X(2) + 6, b2 + px / 3, step >= 3 ? col('acc') : col('sec'));
+            txt(g, '4f system', X(4) - 4, b4 - 4, step >= 6 ? col('acc') : col('sec'), 'right');
+            // grating at the input
+            for (let i = -6; i < 6; i++) if (i % 2 === 0) line(g, [[X(0) - 4, Y(i * 0.06)], [X(0) - 4, Y((i + 1) * 0.06)]], col('text'), 3);
+            // rays, truncated at z (and a short stub at the start so step 0 shows the directions)
+            const zz = Math.max(z, 0.18);
+            ks.forEach((k, ki) => {
+                const s = k * s0, c = col(hues[ki]);
+                ys.forEach(y0 => {
+                    const t = M.trace4f(y0, s, 1), pts = [];
+                    for (let i = 0; i < t.pts.length; i++) {
+                        const [pz, py] = t.pts[i];
+                        if (pz <= zz) pts.push([X(pz), Y(py)]);
+                        else { const [qz, qy] = t.pts[i - 1], u = (zz - qz) / (pz - qz); pts.push([X(zz), Y(qy + u * (py - qy))]); break; }
+                    }
+                    line(g, pts, c, 1.1);
+                });
+                if (z >= 2) {   // the component's focus in the Fourier plane: height f * s
+                    g.fillStyle = c; g.beginPath(); g.arc(X(2), Y(s), 4.5, 0, 2 * Math.PI); g.fill();
+                    if (w > 420) txt(g, k === 0 ? 'DC' : `${k > 0 ? '+' : '−'}${Math.abs(k)}u0`, X(2) + 8, Y(s) + 4, c);
+                }
+            });
+            window.fopFig.f2 = { step, z, spots: ks.map(k => M.trace4f(0.2, k * s0, 1).pts[2][1]) };
+        }
+        const A = window.FopAnim('anim-2f', { steps: CAP.length, draw, caption: s => `Step ${s + 1}: ${CAP[s]}`, stepMs: 1800 });
+        redraws.push(A.redraw);
+    }
+
+    // ── slide 02c: wavelength scaling and smearing ──────────────────────
+    if ($('anim-lambda')) {
+        const N = 4096, SPP = 8, P = 20e-6, DX = P / SPP, F = 0.1, ps = M.powerSpectrum(M.grating(N, SPP, 64)), DC = ps[0];
+        const SWEEP = [450, 633, 850, 1064, 1310, 1550], RGB = [[450, 'blue'], [532, 'acc'], [633, 'orange']];
+        let lam = 1550;
+        function draw() {
+            const multi = $('lam-multi').value === '3';
+            $('lam-val').textContent = multi ? '450 + 532 + 633 nm' : `${fmt(lam, 0)} nm`;
+            const cv = $('cv-lambda'), { g, w, h } = window.fopCanvas(cv, cv.clientWidth < 560 ? 0.85 : 0.5), px = font(g, w);
+            const XR = multi ? 0.012 : 0.025, L = 46, R = w - 10, T = 10, B = h - 2.6 * px - 26;
+            const X = x => L + (x + XR) / (2 * XR) * (R - L), Y = v => B - (Math.log10(Math.max(v / DC, 1e-4)) + 4) / 4 * (B - T);
+            g.strokeStyle = col('border'); g.strokeRect(L, T, R - L, B - T);
+            (multi ? [-10, -5, 0, 5, 10] : [-20, -10, 0, 10, 20]).forEach(mm => txt(g, `${mm}`, X(mm / 1000), B + px + 2, col('sec'), 'center'));
+            txt(g, 'position in the back focal plane (mm)', (L + R) / 2, B + 2 * px + 6, col('sec'), 'center');
+            [1, 1e-2, 1e-4].forEach(v => txt(g, v === 1 ? '1' : v === 1e-2 ? '10⁻²' : '10⁻⁴', 4, Y(v * DC) + 4, col('sec')));
+            const curve = (lams, c, wdt) => { const pts = []; for (let i = 0; i <= 700; i++) { const x = -XR + 2 * XR * i / 700; pts.push([X(x), Y(M.multiIntensity(ps, DX, lams, F, x) / lams.length)]); } line(g, pts, c, wdt); };
+            const strip = (lams) => {     // the pattern as a camera would show it
+                const y0 = h - 22, img = g.createImageData(Math.max(1, Math.round(R - L)), 1);
+                for (let i = 0; i < img.width; i++) {
+                    const x = -XR + 2 * XR * i / img.width; let r = 0, gg = 0, b = 0;
+                    lams.forEach(l => { const v = Math.min(1, Math.sqrt(M.intensityAt(ps, DX, l, F, x) / DC) * 2.2), c = rgb(l < 500 ? col('blue') : l < 600 ? col('acc') : l < 700 ? col('orange') : col('amber')); r += v * c[0]; gg += v * c[1]; b += v * c[2]; });
+                    img.data.set([Math.min(255, r), Math.min(255, gg), Math.min(255, b), 255], 4 * i);
+                }
+                const off = document.createElement('canvas'); off.width = img.width; off.height = 1; off.getContext('2d').putImageData(img, 0, 0);
+                g.imageSmoothingEnabled = true; g.drawImage(off, L, y0, R - L, 16);
+            };
+            if (multi) {
+                RGB.forEach(([l, c]) => curve([l * 1e-9], col(c), 1.2));
+                strip(RGB.map(r => r[0] * 1e-9));
+                [1, 3].forEach(m => { const xs = RGB.map(r => m * r[0] * 1e-9 * F / P); line(g, [[X(xs[0]), T + 4], [X(xs[2]), T + 4]], col('violet'), 3); txt(g, `order ${m}`, X(xs[1]), T + 4 + px + 2, col('violet'), 'center'); });
+            } else {
+                curve([lam * 1e-9], col('amber'), 1.6);
+                strip([lam * 1e-9]);
+                const x1 = lam * 1e-9 * F / P;
+                if (x1 < XR) { line(g, [[X(x1), T], [X(x1), B]], col('violet'), 1, [4, 3]); txt(g, `x1 = λf/p = ${fmt(x1 * 1000, 2)} mm`, Math.min(X(x1) + 6, R - 170), T + px + 4, col('violet')); }
+            }
+            window.fopFig.lambda = { lam, multi, x1mm: lam * 1e-9 * F / P * 1000 };
+        }
+        const A = window.FopAnim('anim-lambda', { steps: SWEEP.length, stepMs: 1600,
+            draw: (s, fr) => { if (!window.fopFig.lamManual) { const a = s ? SWEEP[s - 1] : SWEEP[0]; lam = Math.round(lerp(a, SWEEP[s], ease(fr))); $('lam-slider').value = lam; } draw(); },
+            caption: s => $('lam-multi').value === '3'
+                ? `Three wavelengths at once: each makes its own pattern, scaled by its λ. First orders at ${RGB.map(r => fmt(r[0] * 1e-9 * F / P * 1000, 2)).join(', ')} mm; third orders at ${RGB.map(r => fmt(3 * r[0] * 1e-9 * F / P * 1000, 2)).join(', ')} mm: the copies separate more at each order, so the spectrum smears. (A 50% grating has no even orders.)`
+                : `λ = ${fmt(SWEEP[s], 0)} nm: the first order sits at λf/p = ${fmt(SWEEP[s] * 1e-9 * F / P * 1000, 2)} mm. Same grating, same lens: the pattern scales with the wavelength.` });
+        $('lam-slider').addEventListener('input', () => { window.fopFig.lamManual = true; A.pause(); lam = Number($('lam-slider').value); draw(); });
+        $('lam-multi').addEventListener('input', () => A.redraw());
+        cvClickResume($('anim-lambda'));
+        function cvClickResume(root) { root.querySelector('[data-a="play"]').addEventListener('click', () => { window.fopFig.lamManual = false; }); }
+        redraws.push(draw);
+    }
+
+    // ── slide 03: the four planes of a 4f system ────────────────────────
+    if ($('anim-4f')) {
+        const n = 64;
+        function shapes() {
+            const a = new Float64Array(n * n);
+            for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+                let v = 0;
+                if (x >= 8 && x < 22 && y >= 8 && y < 22) v = 1;
+                const d = Math.hypot(x - 44, y - 16); if (d > 6 && d < 10) v = 1;
+                if (Math.abs(x - y + 4) < 2 && y > 32 && y < 58) v = 1;
+                if (x >= 40 && x < 56 && y >= 44 && y < 48) v = 1;
+                a[y * n + x] = v;
+            }
+            return a;
+        }
+        const IN = shapes();
+        function run(mask) {
+            const re = Float64Array.from(IN), im = new Float64Array(n * n); M.fft2(re, im, n, false);
+            const spec = { re: Float64Array.from(re), im: Float64Array.from(im) };
+            const H = new Float64Array(n * n);
+            for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+                const r = Math.hypot(Math.min(x, n - x), Math.min(y, n - y));
+                H[y * n + x] = mask === 'low' ? (r <= 6 ? 1 : 0) : mask === 'high' ? (r > 3 ? 1 : 0) : 1;
+            }
+            for (let i = 0; i < n * n; i++) { re[i] *= H[i]; im[i] *= H[i]; }
+            const masked = { re: Float64Array.from(re), im: Float64Array.from(im) };
+            M.fft2(re, im, n, false);                 // lens 2: a second FORWARD transform
+            const out = new Float64Array(n * n); for (let i = 0; i < n * n; i++) out[i] = re[i] / (n * n);
+            let err = 0;                              // open mask: out(x, y) must equal in(-x, -y)
+            if (mask === 'none') for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) err = Math.max(err, Math.abs(out[y * n + x] - IN[((n - y) % n) * n + (n - x) % n]));
+            return { spec, masked, H, out, err };
+        }
+        const CAP = ['Input plane: the transparency (64 × 64).', 'Lens 1: its Fourier transform appears in the Fourier plane (log scale, DC in the centre).',
+            'The mask multiplies the spectrum, frequency by frequency: H = F{h}.', 'Lens 2: a second forward transform. The output is the filtered input, mirrored through the axis.'];
+        function draw(step) {
+            const mask = $('m4f-mask').value, r = run(mask), cv = $('cv-4f'), narrow = cv.clientWidth < 560;
+            const { g, w, h } = window.fopCanvas(cv, narrow ? 1.12 : 0.3), px = font(g, w);
+            const size = narrow ? Math.min(w / 2 - 20, h / 2 - 2 * px - 8) : Math.min(w / 4 - 16, h - 2 * px - 12);
+            const pos = i => narrow ? [(i % 2) * w / 2 + (w / 2 - size) / 2, Math.floor(i / 2) * (h / 2) + 4] : [i * w / 4 + (w / 4 - size) / 2, 4];
+            const s1 = logSpec(r.spec.re, r.spec.im, n, 4), s2 = logSpec(r.masked.re, r.masked.im, n, 4);
+            let lo = Infinity, hi = -Infinity; for (const v of r.out) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+            const panels = [[IN, 0, 1, 'input'], [s1.data, s1.lo, s1.hi, 'after lens 1'], [s2.data, s1.lo, s1.hi, 'times the mask'], [r.out, lo, hi, 'after lens 2']];
+            panels.forEach(([d, a, b, label], i) => {
+                const [x, y] = pos(i);
+                g.globalAlpha = i <= step ? 1 : 0.18;
+                image(g, d, n, x, y, size, a, b, i === 0 ? col('text') : undefined);
+                g.globalAlpha = 1;
+                if (i === step) { g.strokeStyle = col('acc'); g.lineWidth = 2.5; g.strokeRect(x - 2, y - 2, size + 4, size + 4); }
+                txt(g, label, x + size / 2, y + size + px + 4, i === step ? col('acc') : col('sec'), 'center');
+            });
+            window.fopFig.f4 = { step, mask, openErr: run('none').err };
+        }
+        const A = window.FopAnim('anim-4f', { steps: 4, draw: s => draw(s), caption: s => `Plane ${s + 1} of 4. ${CAP[s]}`, stepMs: 1700 });
+        $('m4f-mask').addEventListener('input', () => A.redraw());
+        redraws.push(A.redraw);
+    }
+
+    // ── slide 05: two beams ─────────────────────────────────────────────
+    if ($('anim-beams')) {
+        const STEPS = 12;
+        function draw(step, frac) {
+            const phi = 2 * Math.PI * (step - 1 + ease(frac)) / STEPS, P = M.twoBeam(phi);
+            const cv = $('cv-beams'), narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 1.05 : 0.42), px = font(g, w);
+            // phasors
+            const ph = narrow ? h * 0.5 : h, R = Math.min(narrow ? w * 0.22 : w * 0.1, ph * 0.34), cx = narrow ? w / 2 - R : Math.max(R * 0.6, w * 0.2 - R * 0.4) + 10, cy = ph / 2;
+            line(g, [[cx - 0.6 * R, cy], [cx + 2.3 * R, cy]], col('border'), 1); line(g, [[cx, cy - 1.25 * R], [cx, cy + 1.25 * R]], col('border'), 1);
+            const arrow = (x0, y0, x1, y1, c) => { line(g, [[x0, y0], [x1, y1]], c, 2.5); const a = Math.atan2(y1 - y0, x1 - x0); g.fillStyle = c; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - 8 * Math.cos(a - 0.4), y1 - 8 * Math.sin(a - 0.4)); g.lineTo(x1 - 8 * Math.cos(a + 0.4), y1 - 8 * Math.sin(a + 0.4)); g.fill(); };
+            const ex = cx + R, ey = cy, fx = ex + R * Math.cos(phi), fy = ey - R * Math.sin(phi);
+            arrow(cx, cy, ex, ey, col('teal')); arrow(ex, ey, fx, fy, col('amber')); arrow(cx, cy, fx, fy, col('acc'));
+            txt(g, 'beam 1', cx + R / 2, cy + px + 4, col('teal'), 'center');
+            txt(g, `beam 2 at φ = ${fmt(phi * 180 / Math.PI, 0)}°`, cx + R, Math.max(px + 2, cy - 1.25 * R - 4), col('amber'), 'center');
+            // intensity against phase
+            const L = narrow ? 34 : Math.max(cx + 2.5 * R, w * 0.42), Rr = w - 10, T = narrow ? ph + 6 : 10, B = h - px - 12;
+            const X = p => L + p / (2 * Math.PI) * (Rr - L), Y = v => B - v / 4.4 * (B - T);
+            g.strokeStyle = col('border'); g.strokeRect(L, T, Rr - L, B - T);
+            const pts = []; for (let i = 0; i <= 120; i++) { const p = 2 * Math.PI * i / 120; pts.push([X(p), Y(M.twoBeam(p).coherent)]); }
+            line(g, pts, col('acc'), 2); line(g, [[X(0), Y(2)], [X(2 * Math.PI), Y(2)]], col('orange'), 2, [5, 4]);
+            g.fillStyle = col('acc'); g.beginPath(); g.arc(X(phi), Y(P.coherent), 5, 0, 2 * Math.PI); g.fill();
+            txt(g, 'coherent |1 + e^iφ|²', L + 6, T + px + 2, col('acc')); txt(g, 'incoherent: 1 + 1 = 2', L + 6, Y(2) - 6, col('orange'));
+            txt(g, '0', X(0), B + px + 2, col('sec'), 'center'); txt(g, 'π', X(Math.PI), B + px + 2, col('sec'), 'center'); txt(g, '2π', X(2 * Math.PI), B + px + 2, col('sec'), 'center');
+            window.fopFig.beams = { phi, coherent: P.coherent };
+        }
+        const A = window.FopAnim('anim-beams', { steps: STEPS + 1, draw, stepMs: 900,
+            caption: s => { const phi = 2 * Math.PI * s / STEPS, v = M.twoBeam(phi).coherent; return `φ = ${fmt(phi * 180 / Math.PI, 0)}°: coherent intensity ${fmt(v, 2)}, incoherent 2.${Math.abs(v) < 1e-9 ? ' The fields cancel: a negative value has met a positive one.' : ''}`; } });
+        redraws.push(A.redraw);
+    }
+
+    // ── slide 06: device sketches (SVG built from data) ─────────────────
+    if ($('lc-grid')) {
+        const r = M.rng(21);
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 10; x++) svgEl($('lc-grid'), 'rect', { x: 10 + x * 17, y: 32 + y * 17, width: 15, height: 15, style: `fill: var(--c-teal); opacity: ${0.15 + 0.85 * r()}` });
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 10; x++) {
+            const on = r() < 0.5, cx = 222 + x * 17, cy = 40 + y * 17;
+            svgEl($('dmd-grid'), 'line', { x1: cx - 6, y1: cy + (on ? 4 : -4), x2: cx + 6, y2: cy + (on ? -4 : 4), style: `stroke: ${on ? 'var(--c-amber)' : 'var(--border)'}; stroke-width: 3` });
+        }
+        for (let i = 0; i < 4; i++) {
+            const y = 44 + i * 34;
+            svgEl($('mod-rails'), 'line', { x1: 418, y1: y, x2: 592, y2: y, style: 'stroke: var(--text-secondary); stroke-width: 2' });
+            svgEl($('mod-rails'), 'rect', { x: 470, y: y - 9, width: 46, height: 18, rx: 3, class: 's-acc' });
+            svgEl($('mod-rails'), 'path', { d: `M530 ${y - 6} h6 v12 h6 v-12 h6 v12 h6 v-12 h6 v12 h6`, style: 'stroke: var(--accent); fill: none; stroke-width: 1.5' });
+        }
+    }
+
+    // ── slide 07: E and -E look the same ────────────────────────────────
+    function drawSquare() {
+        const cv = $('fig-square'); if (!cv) return;
+        const { g, w, h } = window.fopCanvas(cv, 0.42), px = font(g, w), N = 256;
+        const E = Array.from({ length: N }, (_, i) => { const t = (i - N / 2) / 18; return M.sinc(t) * Math.cos(0.9 * t) - 0.35 * M.sinc(t - 3.2); });
+        const L = 40, R = w - 10, top = [10, h / 2 - 10], bot = [h / 2 + 14, h - px - 6];
+        const X = i => L + i / (N - 1) * (R - L);
+        const pane = ([t, b], lo, hi) => v => b - (v - lo) / (hi - lo) * (b - t);
+        const Yt = pane(top, -1.1, 1.1), Yb = pane(bot, 0, 1.2);
+        [top, bot].forEach(([t, b]) => { g.strokeStyle = col('border'); g.strokeRect(L, t, R - L, b - t); });
+        line(g, [[L, Yt(0)], [R, Yt(0)]], col('border'), 1, [3, 3]);
+        line(g, E.map((v, i) => [X(i), Yt(v)]), col('teal'), 2);
+        line(g, E.map((v, i) => [X(i), Yt(-v)]), col('orange'), 1.6, [5, 4]);
+        line(g, E.map((v, i) => [X(i), Yb(v * v)]), col('acc'), 2.2);
+        txt(g, 'E', 6, Yt(0.6), col('teal')); txt(g, '−E', 6, Yt(-0.6), col('orange'));
+        txt(g, '|E|²', 6, (bot[0] + bot[1]) / 2, col('acc'));
+        txt(g, 'field: signed', R - 6, top[0] + px + 2, col('sec'), 'right');
+        txt(g, 'detector: |E|² = |−E|²', R - 6, bot[0] + px + 2, col('sec'), 'right');
+    }
+    drawSquare(); redraws.push(drawSquare);
+
+    // ── slide 07b: pixel FT vs DFT, DC term ─────────────────────────────
+    function dftInput(kind) {
+        const r = M.rng(31), x = Array.from({ length: 16 }, () => r());
+        if (kind === 'signed') { const m = x.reduce((a, b) => a + b, 0) / 16; return x.map(v => (v - m) * 2); }
+        return x;
+    }
+    function drawDFT() {
+        const cv = $('fig-dft'); if (!cv) return;
+        const kind = $('dft-kind').value, x = dftInput(kind), N = 16;
+        const { g, w, h } = window.fopCanvas(cv, 0.55), px = font(g, w);
+        const L = 40, R = w - 10, T1 = 8, B1 = h * 0.3, T2 = h * 0.38, B2 = h - px - 10;
+        // inputs
+        const mx = Math.max(...x.map(Math.abs)), bw = (R - L) / N;
+        line(g, [[L, (T1 + B1) / 2 + (kind === 'pos' ? (B1 - T1) / 2 : 0)], [R, (T1 + B1) / 2 + (kind === 'pos' ? (B1 - T1) / 2 : 0)]], col('border'), 1);
+        x.forEach((v, i) => {
+            const base = kind === 'pos' ? B1 : (T1 + B1) / 2, hgt = v / mx * (kind === 'pos' ? B1 - T1 : (B1 - T1) / 2);
+            g.fillStyle = col('teal'); g.fillRect(L + i * bw + 2, Math.min(base, base - hgt), bw - 4, Math.abs(hgt));
+        });
+        txt(g, 'pixels', 4, (T1 + B1) / 2, col('sec'));
+        // continuous |F(u)|^2 and its samples
+        const pts = [], d = M.dft(Float64Array.from(x), new Float64Array(N)); let peak = 0;
+        for (let i = 0; i <= 600; i++) { const u = i / 600, f = M.pixelFT(x, u), v = f.re * f.re + f.im * f.im; pts.push([u, v]); peak = Math.max(peak, v); }
+        const X = u => L + u * (R - L), Y = v => B2 - Math.sqrt(v / peak) * (B2 - T2);   // sqrt scale: |F|
+        g.strokeStyle = col('border'); g.strokeRect(L, T2, R - L, B2 - T2);
+        line(g, pts.map(([u, v]) => [X(u), Y(v)]), col('amber'), 1.6);
+        let other = 0;
+        for (let k = 0; k < N; k++) { const f = M.pixelFT(x, k / N), v = f.re * f.re + f.im * f.im; if (k) other = Math.max(other, Math.sqrt(v)); g.fillStyle = k ? col('acc') : col('orange'); g.beginPath(); g.arc(X(k / N), Y(v), 4, 0, 2 * Math.PI); g.fill(); }
+        txt(g, 'u (cycles per pixel) →', (L + R) / 2, B2 + px + 4, col('sec'), 'center');
+        txt(g, '|F|', 4, (T2 + B2) / 2, col('sec'));
+        const dc = Math.abs(d.re[0]), ratio = dc / Math.max(other, 1e-12);
+        txt(g, kind === 'pos' ? `DC bin = sum of pixels: ${fmt(ratio, 1)}× the largest other bin` : `DC ≈ 0: no bin hogs the full scale`, R - 6, T2 + px + 2, kind === 'pos' ? col('orange') : col('acc'), 'right');
+        window.fopFig.dft = { kind, dc, sum: x.reduce((a, b) => a + b, 0), ratio };
+    }
+    if ($('dft-kind')) { $('dft-kind').addEventListener('input', drawDFT); drawDFT(); redraws.push(drawDFT); }
+
+    // ── slide 07b: balanced detection, bin by bin ───────────────────────
+    if ($('anim-bal')) {
+        const r = M.rng(41), N = 8, xin = Array.from({ length: N }, () => M.gauss(r)), D = M.dft(Float64Array.from(xin), new Float64Array(N));
+        const LO = 2, mx = Math.max(...Array.from(D.re).map(Math.abs), ...Array.from(D.im).map(Math.abs));
+        const read = s => { const k = s >> 1, q = s & 1; return { k, q, b: M.balanced(D.re[k], D.im[k], LO, q ? Math.PI / 2 : 0) }; };
+        function draw(step, frac) {
+            const cv = $('cv-bal'), narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 0.95 : 0.42), px = font(g, w);
+            const { k, q, b } = read(step);
+            // schematic: signal + LO into a 50:50 coupler, two photodiodes, subtract
+            const sw = narrow ? w : w * 0.46, sh = narrow ? h * 0.45 : h;
+            const cx = sw * 0.42, cy = sh * 0.5;
+            line(g, [[8, cy - 30], [cx - 20, cy - 4]], col('teal'), 3); txt(g, `E (bin ${k})`, 8, cy - 36, col('teal'));
+            line(g, [[8, cy + 30], [cx - 20, cy + 4]], col('amber'), 3); txt(g, `LO ${q ? '90°' : '0°'}`, 8, cy + 46, col('amber'));
+            g.fillStyle = col('code'); g.strokeStyle = col('acc'); g.lineWidth = 1.5; g.fillRect(cx - 20, cy - 16, 40, 32); g.strokeRect(cx - 20, cy - 16, 40, 32);
+            txt(g, '50:50', cx, cy + 4, col('acc'), 'center');
+            const pdx = sw * 0.72, glow = ease(frac);
+            [[-1, b.ia, 'I₊'], [1, b.ib, 'I₋']].forEach(([sgn, v, lab]) => {
+                const y = cy + sgn * 34; line(g, [[cx + 20, cy + sgn * 6], [pdx - 10, y]], col('text'), 2 + 3 * Math.min(1, v / 8) * glow);
+                g.fillStyle = col('violet'); g.beginPath(); g.moveTo(pdx - 10, y - 9); g.lineTo(pdx + 6, y); g.lineTo(pdx - 10, y + 9); g.fill();
+                txt(g, `${lab} ${fmt(v * glow, 2)}`, pdx + 10, y + 4, col('text'));
+            });
+            txt(g, `I₊ − I₋ = ${fmt(b.diff * glow, 2)}`, pdx - 40, cy + 70 > sh - 4 ? sh - 4 : cy + 70, col('acc'));
+            txt(g, `= 2·LO·${q ? 'Im' : 'Re'} F${k}`, pdx - 40, Math.min(sh - 4 + px + 2, cy + 70 + px + 4), col('sec'));
+            // bars: camera |F|^2 (grey), I channel, Q channel, filled so far
+            const bx0 = narrow ? 34 : w * 0.52, bx1 = w - 8, by0 = (narrow ? sh + 10 : 10) + px + 8, by1 = h - px - 8;
+            const mid = (by0 + by1) / 2, bwid = (bx1 - bx0) / N;
+            g.strokeStyle = col('border'); g.strokeRect(bx0, by0, bx1 - bx0, by1 - by0); line(g, [[bx0, mid], [bx1, mid]], col('border'), 1, [3, 3]);
+            const sc = v => v / (mx * 1.05) * (by1 - by0) / 2;
+            for (let j = 0; j < N; j++) {
+                const x0 = bx0 + j * bwid, cam = Math.hypot(D.re[j], D.im[j]);
+                g.fillStyle = col('sec'); g.globalAlpha = 0.35; g.fillRect(x0 + 2, mid - sc(cam), bwid / 3 - 2, sc(cam)); g.globalAlpha = 1;
+                const done = s => s < step || (s === step && frac >= 1);
+                if (done(2 * j)) { const v = D.re[j]; g.fillStyle = col('teal'); g.fillRect(x0 + bwid / 3 + 1, Math.min(mid, mid - sc(v)), bwid / 3 - 2, Math.abs(sc(v))); }
+                if (done(2 * j + 1)) { const v = D.im[j]; g.fillStyle = col('amber'); g.fillRect(x0 + 2 * bwid / 3, Math.min(mid, mid - sc(v)), bwid / 3 - 2, Math.abs(sc(v))); }
+                if (j === k) { g.strokeStyle = col('acc'); g.lineWidth = 2; g.strokeRect(x0 + 1, by0 + 1, bwid - 2, by1 - by0 - 2); }
+                txt(g, String(j), x0 + bwid / 2, by1 + px + 2, col('sec'), 'center');
+            }
+            txt(g, '|F| camera', bx0, by0 - 6, col('sec')); txt(g, 'Re', bx0 + 11 * px * 0.62 + 10, by0 - 6, col('teal')); txt(g, 'Im', bx0 + 14 * px * 0.62 + 18, by0 - 6, col('amber'));
+            window.fopFig.bal = { step, k, q, diff: b.diff, expect: 2 * LO * (q ? D.im[k] : D.re[k]) };
+        }
+        const A = window.FopAnim('anim-bal', { steps: 2 * N, draw, stepMs: 1300,
+            caption: s => { const { k, q, b } = read(s); return `Bin ${k}, LO at ${q ? '90°' : '0°'}: photodiodes read ${fmt(b.ia, 2)} and ${fmt(b.ib, 2)}; the difference ${fmt(b.diff, 2)} = 2·LO·${q ? 'Im' : 'Re'} F${k}, sign included. A camera would read only |F${k}|² = ${fmt(b.camera, 2)}.`; } });
+        redraws.push(A.redraw);
+    }
+
+    // ── slide 08: chip schematics (SVG) ─────────────────────────────────
+    if ($('ch-mesh')) {
+        const m = $('ch-mesh');
+        for (let i = 0; i < 6; i++) svgEl(m, 'line', { x1: 8, y1: 34 + i * 24, x2: 196, y2: 34 + i * 24, style: 'stroke: var(--text-secondary); stroke-width: 1.2' });
+        for (let c = 0; c < 6; c++) for (let i = c % 2; i < 5; i += 2) {
+            const x = 28 + c * 28, y = 34 + i * 24;
+            svgEl(m, 'path', { d: `M${x - 9} ${y} L${x + 9} ${y + 24} M${x - 9} ${y + 24} L${x + 9} ${y}`, style: 'stroke: var(--c-teal); stroke-width: 2.2; fill: none' });
+            svgEl(m, 'circle', { cx: x + 12, cy: y, r: 3, style: 'fill: var(--c-amber)' });
+        }
+        const s = $('ch-slab');
+        for (let i = 0; i < 6; i++) svgEl(s, 'line', { x1: 212, y1: 40 + i * 22, x2: 252, y2: 40 + i * 22, style: 'stroke: var(--text-secondary); stroke-width: 1.5' });
+        svgEl(s, 'path', { d: 'M252 30 L340 30 Q370 95 340 160 L252 160 Z', style: 'fill: rgba(151,205,198,0.12); stroke: var(--c-teal)' });
+        for (let j = 0; j < 3; j++) for (let i = 0; i < 9; i++) svgEl(s, 'rect', { x: 268 + j * 22, y: 36 + i * 14, width: 4, height: 9, style: `fill: var(--c-amber); opacity: ${0.4 + 0.6 * ((i * 7 + j * 3) % 5) / 5}` });
+        for (let i = 0; i < 6; i++) svgEl(s, 'line', { x1: 352, y1: 40 + i * 22, x2: 396, y2: 40 + i * 22, style: 'stroke: var(--text-secondary); stroke-width: 1.5' });
+        const d = $('ch-delay');
+        for (let i = 0; i < 4; i++) svgEl(d, 'line', { x1: 416, y1: 44 + i * 36, x2: 596, y2: 44 + i * 36, style: 'stroke: var(--text-secondary); stroke-width: 1.2' });
+        [[0, 1, 452], [2, 3, 452], [0, 2, 520], [1, 3, 520]].forEach(([a, b, x]) => svgEl(d, 'path', { d: `M${x - 10} ${44 + a * 36} L${x + 10} ${44 + b * 36} M${x - 10} ${44 + b * 36} L${x + 10} ${44 + a * 36}`, style: 'stroke: var(--c-teal); stroke-width: 2.2; fill: none' }));
+        [1, 3].forEach(i => svgEl(d, 'path', { d: `M478 ${44 + i * 36} q8 -14 16 0 q8 14 16 0`, style: 'stroke: var(--c-amber); stroke-width: 2; fill: none' }));
+    }
+
+    // ── slide 08b: slab lens and butterfly mesh ─────────────────────────
+    if ($('anim-chip')) {
+        const r = M.rng(51), N = 8, ar = Float64Array.from({ length: N }, () => 0.3 + r()), ai = new Float64Array(N);
+        const D = M.dft(ar, ai), ST = M.fftStages(ar, ai);
+        const CAP = ['Data enters: one modulator per waveguide writes the 8 input values (both panels).',
+            '(a) Light spreads across the slab from every input at once. (b) The inputs are wired in bit-reversed order.',
+            '(a) The output arc carries the continuous transform (curve). (b) Layer 1: four 2-point butterflies.',
+            '(a) The 8 output waveguides sample the arc (dots): the DFT. (b) Layer 2: butterflies 2 apart, with fixed phase shifts.',
+            '(b) Layer 3: butterflies 4 apart. The mesh now holds the exact 8-point DFT; it matches (a)\'s samples.',
+            'Both are 1-D. A 2-D transform is rows, a transpose, then columns. Light crosses in picoseconds, but a new vector enters once per modulator symbol: GHz.'];
+        function draw(step, frac) {
+            const cv = $('cv-chip'), narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 1.25 : 0.48), px = font(g, w);
+            const pw = narrow ? w : w / 2 - 8, ph = narrow ? h / 2 - 8 : h, ox2 = narrow ? 0 : w / 2 + 8, oy2 = narrow ? h / 2 + 8 : 0;
+            const e = ease(frac);
+            // (a) slab
+            const yIn = i => 24 + (i + 0.5) * (ph - 50) / N, x0 = 40, xs = pw * 0.3, xe = pw * 0.72;
+            txt(g, '(a) slab lens', 4, px, col('acc'));
+            for (let i = 0; i < N; i++) {
+                line(g, [[x0 - 30, yIn(i)], [xs, yIn(i)]], col('sec'), 1.4);
+                g.fillStyle = col('teal'); g.globalAlpha = step >= 0 ? 1 : 0.2; g.fillRect(x0 - 26, yIn(i) - 5, ar[i] / 1.3 * 26, 10); g.globalAlpha = 1;
+            }
+            g.fillStyle = 'rgba(151,205,198,0.10)'; g.strokeStyle = col('teal'); g.beginPath(); g.moveTo(xs, 18); g.lineTo(xe, 18); g.quadraticCurveTo(xe + 26, ph / 2, xe, ph - 22); g.lineTo(xs, ph - 22); g.closePath(); g.fill(); g.stroke();
+            if (step >= 1) {                       // spreading wavefronts
+                const rr = (step === 1 ? e : 1) * (xe - xs);
+                g.save(); g.beginPath(); g.rect(xs, 18, xe - xs + 30, ph - 40); g.clip();
+                for (let i = 0; i < N; i += 2) { g.strokeStyle = col('amber'); g.globalAlpha = 0.5; g.beginPath(); g.arc(xs, yIn(i), rr, -1.1, 1.1); g.stroke(); }
+                g.restore(); g.globalAlpha = 1;
+            }
+            const sy = t => 24 + t * (ph - 50), mag = x => Math.hypot(M.slabField(ar, ai, x).re, M.slabField(ar, ai, x).im), mx = Math.max(...Array.from({ length: N }, (_, k) => Math.hypot(D.re[k], D.im[k])));
+            if (step >= 2) {                       // continuous transform along the output arc (x from 0 to N)
+                const pts = []; for (let i = 0; i <= 160; i++) { const x = i / 160 * N; pts.push([xe + 8 + mag(x - 0.5) / mx * (pw - xe - 16) * (step === 2 ? e : 1), sy(i / 160)]); }
+                line(g, pts, col('amber'), 1.6);
+            }
+            for (let k = 0; k < N; k++) {
+                const y = sy((k + 0.5) / N); line(g, [[xe + 2, y], [xe + 8, y]], col('sec'), 1);
+                if (step >= 3) { g.fillStyle = col('acc'); g.beginPath(); g.arc(xe + 8 + Math.hypot(D.re[k], D.im[k]) / mx * (pw - xe - 16), y, 3.6, 0, 2 * Math.PI); g.fill(); }
+            }
+            // (b) mesh
+            const st = step === 0 ? -1 : Math.min(step - 1, 3), L = ox2 + 30, R = ox2 + pw - 8, yb = i => oy2 + 24 + (i + 0.5) * (ph - 50) / N;
+            txt(g, '(b) butterfly mesh', ox2 + 4, oy2 + px, col('acc'));
+            const colX = s => L + (s + 0.5) / 4.2 * (R - L);
+            for (let i = 0; i < N; i++) { line(g, [[L - 22, yb(i)], [R, yb(i)]], col('border'), 1.2); txt(g, String(i), ox2 + 2, yb(i) + 4, col('sec')); }
+            ST.stages.forEach((S, s) => {
+                if (s > 0) S.pairs.forEach(([p, q]) => {
+                    const active = s - 1 === st - 1 && st >= 1, x = colX(s) - (R - L) / 8.4;
+                    line(g, [[x - 6, yb(p)], [x + 6, yb(q)]], active ? col('acc') : col('teal'), active ? 2.4 : 1.2);
+                    line(g, [[x - 6, yb(q)], [x + 6, yb(p)]], active ? col('acc') : col('teal'), active ? 2.4 : 1.2);
+                });
+                if (s <= st) for (let i = 0; i < N; i++) {
+                    const m = Math.hypot(S.re[i], S.im[i]) / mx, a = s === st ? e : 1;
+                    g.fillStyle = s === 3 ? col('acc') : col('amber'); g.globalAlpha = 0.25 + 0.75 * a;
+                    g.fillRect(colX(s) - 4, yb(i) - Math.max(1, m * (ph - 50) / N * 0.45), 8, 2 * Math.max(1, m * (ph - 50) / N * 0.45)); g.globalAlpha = 1;
+                }
+            });
+            if (step === 0) for (let i = 0; i < N; i++) { g.fillStyle = col('teal'); g.fillRect(L - 20, yb(i) - 5, ar[i] / 1.3 * 18, 10); }
+            if (step >= 5) { g.fillStyle = col('code'); g.fillRect(4, h - px - 12, w - 8, px + 10); txt(g, '2-D = rows → transpose → columns   ·   throughput = modulator clock × channels   ·   WDM: one transform per wavelength', w / 2, h - 6, col('acc'), 'center'); }
+            const last = ST.stages[3]; let err = 0; for (let k = 0; k < N; k++) err = Math.max(err, Math.abs(last.re[k] - D.re[k]), Math.abs(last.im[k] - D.im[k]), Math.abs(M.slabField(ar, ai, k).re - D.re[k]));
+            window.fopFig.chip = { step, err };
+        }
+        const A = window.FopAnim('anim-chip', { steps: CAP.length, draw, caption: s => `Step ${s + 1}: ${CAP[s]}`, stepMs: 1800 });
+        redraws.push(A.redraw);
+    }
+
+    // ── slide 08c: the module's signal path ─────────────────────────────
+    if ($('anim-module')) {
+        const ST = [
+            ['host FPGA card', 'Alveo V80', 'paper', 'The host card (an Alveo V80) sends data and operation requests to the module over its QSFP56 port.'],
+            ['QSFP56 port', 'pluggable', 'paper', 'A QSFP56 pluggable: the module sits where an ordinary optical transceiver would.'],
+            ['4 × MZM', 'binary NRZ', 'paper', 'Four Mach–Zehnder modulators write the data onto light: binary (NRZ) levels only, 14 GBaud process-design-kit devices (drivers to 56 GBaud). 4 × 14 Gb/s ≈ 7 GB/s into the optics (derived).'],
+            ['OFT device', 'passive, diffractive', 'paper', 'A passive diffractive device computes the optical Fourier transform: the transform is done by propagation, with no operation count.'],
+            ['balanced PDs', 'coherent detection', 'paper', 'Balanced photodiodes: coherent detection, so the output\'s sign survives (slide 07b).'],
+            ['TIAs / ADCs', 'to 56 GBaud', 'paper', 'Transimpedance amplifiers and ADCs turn photocurrents back into numbers. Precision and ENOB are not reported.'],
+            ['FPGA driver IP', 'modular arithmetic, error correction', 'paper', 'The FPGA driver IP does the modular arithmetic and runs an error-correction IP; with binary planes, rounding each plane can make the result exact (inference, slide 10b).'],
+            ['whole module', '9.7 W', 'paper', 'The whole module draws 9.7 W. Measured throughput, latency and energy per operation are not reported; "tens of GFLOPs" is in the abstract only.'],
+        ];
+        const TAGC = { paper: 'teal', web: 'amber', derived: 'violet', inference: 'orange' };
+        function draw(step, frac) {
+            const cv = $('cv-module'), cw = cv.clientWidth || 600, narrow = cw < 560, per = narrow ? 2 : 4, rows = Math.ceil(7 / per);
+            const px0 = Math.max(10, Math.min(13, cw / 58)), bh0 = 3.6 * px0 + 16, gap0 = 2.2 * px0 + 10;
+            const { g, w, h } = window.fopCanvas(cv, (14 + rows * (bh0 + gap0) + 2 * px0) / cw), px = font(g, w);
+            const bw = (w - 16) / per - 22, bh = bh0;
+            const pos = i => { const row = Math.floor(i / per), c = i % per; return [8 + (row % 2 ? per - 1 - c : c) * ((w - 16) / per) + 11, 14 + row * (bh + gap0)]; };
+            for (let i = 0; i < 7; i++) {
+                const [x, y] = pos(i), act = i === step || step === 7, isOpt = i >= 2 && i <= 4;
+                g.fillStyle = isOpt ? 'rgba(151,205,198,0.10)' : col('code'); g.fillRect(x, y, bw, bh);
+                g.strokeStyle = act ? col('acc') : col('border'); g.lineWidth = act ? 2.5 : 1; g.strokeRect(x, y, bw, bh);
+                g.save(); g.beginPath(); g.rect(x, y, bw, bh); g.clip();
+                txt(g, ST[i][0], x + 6, y + px + 6, act ? col('acc') : col('text'));
+                ST[i][1].split(', ').forEach((t, j) => txt(g, t, x + 6, y + (2 + j) * px + 10 + 2 * j, col('sec')));
+                g.restore();
+                if (i < 6) { const [x2, y2] = pos(i + 1); if (y2 === y) line(g, [[x2 > x ? x + bw : x, y + bh / 2], [x2 > x ? x2 : x2 + bw, y + bh / 2]], col('sec'), 1.5); else line(g, [[x + bw / 2, y + bh], [x2 + bw / 2, y2]], col('sec'), 1.5); }
+            }
+            txt(g, 'tinted: optics on the chip', 8, h - 6, col('teal'));
+            // the moving packet: four NRZ lanes before the OFT, a pattern after, numbers after the ADC
+            if (step < 7) {
+                const i = step, [x, y] = pos(i), [xn, yn] = pos(Math.min(6, i + 1)), t = ease(frac);
+                const px0 = lerp(x + bw * 0.45, i < 6 ? xn + bw * 0.45 : x + bw * 0.45, i < 6 ? t * 0.35 : 0), py0 = lerp(y + bh + 8, i < 6 ? yn + bh + 8 : y + bh + 8, i < 6 ? t * 0.35 : 0);
+                const bits = M.prbs(32, 7);
+                if (i <= 2) for (let l = 0; l < 4; l++) { const pts = []; for (let b = 0; b < 8; b++) { const v = bits[l * 8 + b]; pts.push([px0 + b * 6, py0 + 3 + l * 6 - v * 3], [px0 + b * 6 + 6, py0 + 3 + l * 6 - v * 3]); } line(g, pts, col('acc'), 1.2); }
+                else if (i <= 4) { for (let k = 0; k < 12; k++) { const v = Math.abs(M.sinc((k - 6) / 2.5)); g.fillStyle = col('amber'); g.fillRect(px0 + k * 4, py0 + 14 - v * 16, 3, v * 16); } }
+                else txt(g, '0x3a 0x9f …', px0, py0 + 12, col('acc'));
+            }
+            const tag = ST[step][2];
+            g.fillStyle = col(TAGC[tag]); txt(g, `source: ${tag === 'paper' ? 'arXiv:2608.21536' : tag}`, w - 8, h - 6, col(TAGC[tag]), 'right');
+            window.fopFig.module = { step, rate: M.opticsRateGBps(4, 14, 1), stages: M.radixStages(256, 4) };
+        }
+        const A = window.FopAnim('anim-module', { steps: ST.length, draw, stepMs: 2200, caption: s => `${s + 1}. ${ST[s][0]}: ${ST[s][3]}` });
+        redraws.push(A.redraw);
+        const lanes = $('nt-lanes');
+        if (lanes) for (let l = 0; l < 4; l++) { svgEl(lanes, 'rect', { x: 414, y: 22 + l * 26, width: 180, height: 20, rx: 4, class: 's-box' }); svgEl(lanes, 'text', { x: 424, y: 37 + l * 26, class: 's-d' }).textContent = `channel ${l + 1}`; svgEl(lanes, 'path', { d: `M500 ${32 + l * 26} h80`, style: 'stroke: var(--c-teal); stroke-width: 3' }); }
+    }
+
+    // ── slide 08d: chip vs fibre (SVG) and the NRZ eye ──────────────────
+    if ($('dom-chip')) {
+        const c = $('dom-chip');
+        for (let i = 0; i < 4; i++) { svgEl(c, 'line', { x1: 8, y1: 46 + i * 30, x2: 90, y2: 46 + i * 30, style: 'stroke: var(--text-secondary); stroke-width: 2' }); svgEl(c, 'rect', { x: 30, y: 39 + i * 30, width: 30, height: 14, rx: 3, class: 's-acc' }); }
+        svgEl(c, 'path', { d: 'M90 30 L170 30 Q194 95 170 160 L90 160 Z', style: 'fill: rgba(151,205,198,0.12); stroke: var(--c-teal)' });
+        for (let k = 0; k < 9; k++) { const v = Math.abs(M.sinc((k - 4) / 1.6)); svgEl(c, 'line', { x1: 182, y1: 38 + k * 14, x2: 240, y2: 38 + k * 14, style: 'stroke: var(--text-secondary); stroke-width: 1.2' }); svgEl(c, 'rect', { x: 244, y: 33 + k * 14, width: Math.max(2, 50 * v), height: 10, style: 'fill: var(--c-amber)' }); }
+        const f = $('dom-fibre');
+        svgEl(f, 'rect', { x: 320, y: 70, width: 270, height: 50, rx: 25, style: 'fill: var(--bg-code); stroke: var(--text-secondary)' });
+        svgEl(f, 'rect', { x: 320, y: 90, width: 270, height: 10, style: 'fill: rgba(151,205,198,0.25)' });
+        const bits = M.prbs(16, 3), pts = [];
+        bits.forEach((b, i) => { pts.push(`${330 + i * 15} ${b ? 52 : 62}`, `${345 + i * 15} ${b ? 52 : 62}`); });
+        svgEl(f, 'path', { d: 'M' + pts.join(' L'), style: 'stroke: var(--accent); stroke-width: 2; fill: none' });
+        svgEl(f, 'text', { x: 330, y: 146, class: 's-d' }).textContent = 'time →';
+    }
+    if ($('flip-demo')) {
+        const a = M.flipFloat32Bit(1, 30), b = M.flipFloat32Bit(1, 23);
+        $('flip-demo').textContent = `1.0 with exponent bit 30 flipped is ${a === Infinity ? 'infinity' : a}; with bit 23 flipped, ${b}.`;
+        window.fopFig.flip = { a, b };
+    }
+    if ($('anim-eye')) {
+        const SPS = 16, bits = M.prbs(256, 4), sig = M.nrz(bits, SPS), CUTS = [2, 1, 0.75, 0.6, 0.5, 0.42, 0.35, 0.3];
+        const cache = CUTS.map(c => { const y = M.lowpass(sig, SPS, c); return { y, eye: M.eye(y, bits, SPS) }; });
+        const spec = (() => { const re = Float64Array.from(sig), im = new Float64Array(sig.length); M.fft(re, im, false); return Array.from({ length: sig.length / 2 }, (_, k) => Math.hypot(re[k], im[k])); })();
+        function draw(step) {
+            const cv = $('cv-eye'), narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 1.1 : 0.36), px = font(g, w);
+            const { y, eye } = cache[step], c = CUTS[step];
+            const box = narrow ? [[6, 6, w - 12, h / 3 - 16], [6, h / 3 + 6, w / 2 - 10, h * 2 / 3 - 3 * px - 24], [w / 2 + 4, h / 3 + 6, w / 2 - 10, h * 2 / 3 - 3 * px - 24]]
+                               : [[6, 6, w * 0.42, h - 2 * px - 12], [w * 0.45, 6, w * 0.25, h - 2 * px - 12], [w * 0.73, 6, w * 0.26, h - 2 * px - 12]];
+            box.forEach(([x, yy, bw, bh]) => { g.strokeStyle = col('border'); g.strokeRect(x, yy, bw, bh); });
+            const map = ([x, yy, bw, bh], lo, hi) => [u => x + u * bw, v => yy + bh - (v - lo) / (hi - lo) * bh];
+            // waveform
+            let [X, Y] = map(box[0], -0.4, 1.4); const n = 24 * SPS;
+            line(g, Array.from({ length: n }, (_, i) => [X(i / n), Y(sig[i])]), col('border'), 1.2);
+            line(g, Array.from({ length: n }, (_, i) => [X(i / n), Y(y[i])]), col('teal'), 1.6);
+            for (let i = 0; i < 24; i++) { const v = y[i * SPS + SPS / 2], err = (v > 0.5 ? 1 : 0) !== bits[i]; if (err) { g.fillStyle = col('orange'); g.beginPath(); g.arc(X((i * SPS + SPS / 2) / n), Y(v), 4, 0, 2 * Math.PI); g.fill(); } }
+            txt(g, 'bits in time', box[0][0] + 6, box[0][1] + px + 2, col('sec'));
+            // eye
+            [X, Y] = map(box[1], -0.4, 1.4);
+            g.globalAlpha = 0.35;
+            for (let i = 1; i < bits.length - 2; i++) line(g, Array.from({ length: 2 * SPS + 1 }, (_, j) => [X(j / (2 * SPS)), Y(y[i * SPS - SPS / 2 + j])]), col('acc'), 1);
+            g.globalAlpha = 1;
+            line(g, [[X(0), Y(0.5)], [X(1), Y(0.5)]], col('orange'), 1, [3, 3]);
+            txt(g, 'eye', box[1][0] + 6, box[1][1] + px + 2, col('sec'));
+            // spectrum and the mask
+            [X, Y] = map(box[2], 0, 1); const fmax = 2.2, mx = Math.max(...spec.slice(1));
+            line(g, spec.map((v, k) => [k / sig.length * SPS / fmax, Math.min(1, v / mx)]).filter(p => p[0] <= 1).map(([u, v]) => [X(u), Y(v * 0.9)]), col('amber'), 1);
+            g.fillStyle = 'rgba(222,128,90,0.18)'; g.fillRect(X(c / fmax), box[2][1], X(1) - X(c / fmax), box[2][3]);
+            line(g, [[X(c / fmax), box[2][1]], [X(c / fmax), box[2][1] + box[2][3]]], col('orange'), 2);
+            txt(g, 'spectrum + mask', box[2][0] + 6, box[2][1] + px + 2, col('sec'));
+            if (narrow) { txt(g, `cut-off ${c}× bit rate`, w / 2, h - px - 8, eye.errors ? col('orange') : col('acc'), 'center'); txt(g, `eye ${fmt(eye.opening, 2)} · ${eye.errors} wrong of 256`, w / 2, h - 4, eye.errors ? col('orange') : col('acc'), 'center'); }
+            else txt(g, `cut-off ${c}× bit rate · eye opening ${fmt(eye.opening, 2)} · ${eye.errors} wrong bits of 256`, w / 2, h - 6, eye.errors ? col('orange') : col('acc'), 'center');
+            window.fopFig.eye = { step, cut: c, opening: eye.opening, errors: eye.errors };
+        }
+        const A = window.FopAnim('anim-eye', { steps: CUTS.length, draw: s => draw(s), stepMs: 1500,
+            caption: s => { const e = cache[s].eye; return `Mask at ${CUTS[s]}× the bit rate: eye opening ${fmt(e.opening, 2)}, ${e.errors} of 256 bits decided wrongly.${e.errors ? ' Inter-symbol interference: the filter has smeared neighbouring bits together.' : ''}`; } });
+        redraws.push(A.redraw);
+    }
+
+    // ── slide 08e: fixed band vs top-k ──────────────────────────────────
+    if ($('anim-band')) {
+        const K = 4, FR = 8, data = Array.from({ length: FR }, (_, s) => { const x = M.chunk(64, s + 1), e = M.binEnergy(x); return { x, e, band: M.lowBand(e, K), top: M.topK(e, K) }; });
+        function draw(step) {
+            const cv = $('cv-band'), narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 0.95 : 0.5), px = font(g, w), d = data[step];
+            const L = 10, R = w - 10, T1 = 8, B1 = h * 0.3, T2 = h * 0.36, B2 = h - (narrow ? 3 : 2) * px - (narrow ? 14 : 10);
+            const mx = Math.max(...d.x.map(Math.abs));
+            g.strokeStyle = col('border'); g.strokeRect(L, T1, R - L, B1 - T1);
+            line(g, Array.from(d.x, (v, i) => [L + i / 63 * (R - L), (T1 + B1) / 2 - v / mx * (B1 - T1) / 2.2]), col('teal'), 1.6);
+            txt(g, `chunk ${step + 1}`, L + 6, T1 + px + 2, col('sec'));
+            const nb = d.e.length, bw = (R - L) / nb, em = Math.max(...d.e);
+            g.fillStyle = 'rgba(170,189,89,0.16)'; g.fillRect(L, T2, bw * K, B2 - T2);
+            g.strokeStyle = col('acc'); g.lineWidth = 1.5; g.strokeRect(L, T2, bw * K, B2 - T2);
+            d.e.forEach((v, k) => {
+                const hh = Math.sqrt(v / em) * (B2 - T2 - 4), top = d.top.includes(k);
+                g.fillStyle = top ? col('orange') : col('sec'); g.globalAlpha = top ? 1 : 0.55;
+                g.fillRect(L + k * bw + 1, B2 - hh, bw - 2, hh); g.globalAlpha = 1;
+            });
+            const cb = M.captured(d.e, d.band), ct = M.captured(d.e, d.top);
+            txt(g, `fixed band (shaded): ${fmt(cb * 100, 0)}% of the energy`, L + 4, B2 + px + 4, col('acc'));
+            if (narrow) txt(g, `top-${K} (orange): ${fmt(ct * 100, 0)}%`, L + 4, B2 + 2 * px + 8, col('orange'));
+            else txt(g, `top-${K} (orange): ${fmt(ct * 100, 0)}%`, R - 4, B2 + px + 4, col('orange'), 'right');
+            window.fopFig.band = { step, cb, ct, band: d.band.join(), top: d.top.join() };
+        }
+        const A = window.FopAnim('anim-band', { steps: FR, draw: s => draw(s), stepMs: 1500,
+            caption: s => { const d = data[s]; return `Chunk ${s + 1}: the band keeps bins ${d.band.join(', ')} (always); top-${K} keeps bins ${d.top.join(', ')}, found by comparing every bin.`; } });
+        redraws.push(A.redraw);
+    }
+
+    // ── slides 09, 10, 11: charts drawn from the results tables on the slide ─
+    function axesLog(g, L, R, T, B, lo, hi, px, label) {
+        g.strokeStyle = col('border'); g.strokeRect(L, T, R - L, B - T);
+        for (let e = Math.ceil(Math.log10(lo)); e <= Math.floor(Math.log10(hi)); e++) {
+            const y = B - (e - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (B - T);
+            line(g, [[L, y], [R, y]], col('border'), 0.6, [2, 3]); txt(g, `1e${e}`, L - 4, y + 4, col('sec'), 'right');
+        }
+        if (label) txt(g, label, L + 6, T + px + 2, col('sec'));
+        return v => B - (Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (B - T);
+    }
+    function drawEnob() {
+        const cv = $('fig-enob'), tb = cv && cv.closest('section').querySelector('table'); if (!tb) return;
+        const T = window.fopTable(tb), cols = T.head.map((c, i) => [c, i]).filter(([c]) => /^ENOB \d+$/.test(c));
+        const { g, w, h } = window.fopCanvas(cv, 0.45), px = font(g, w), L = 52, R = w - 10, Tp = 8, B = h - 2 * px - 10;
+        const Y = axesLog(g, L, R, Tp, B, 5e-5, 0.3, px, 'relative RMS error');
+        const en = cols.map(([c]) => Number(c.split(' ')[1])), X = e => L + (e - en[0]) / (en[en.length - 1] - en[0]) * (R - L - 20) + 10;
+        en.forEach(e => txt(g, String(e), X(e), B + px + 2, col('sec'), 'center')); txt(g, 'ENOB', (L + R) / 2, B + 2 * px + 6, col('sec'), 'center');
+        const hues = ['teal', 'amber', 'orange'], pts = [];
+        T.rows.forEach((r, i) => {
+            const p = cols.map(([, j]) => [X(Number(T.head[j].split(' ')[1])), Y(window.fopNum(r[j]))]); pts.push(p);
+            line(g, p, col(hues[i % 3]), 2); p.forEach(([x, y]) => { g.fillStyle = col(hues[i % 3]); g.beginPath(); g.arc(x, y, 3.5, 0, 2 * Math.PI); g.fill(); });
+            txt(g, `L = ${r[0]}`, R - 6, Tp + (i + 1) * (px + 4) + 2, col(hues[i % 3]), 'right');
+        });
+        window.fopFig.enob = { rows: T.rows.length, points: cols.length };
+    }
+    function drawBuy() {
+        const cv = $('fig-buy'); if (!cv) return;
+        const tabs = cv.closest('section').querySelectorAll('table'), fmtT = window.fopTable(tabs[0]), pas = window.fopTable(tabs[1]);
+        const narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 1.0 : 0.42), px = font(g, w);
+        const A = narrow ? [52, 10, w - 10, h / 2 - 2 * px] : [52, 10, w / 2 - 14, h - 2 * px - 6], Bx = narrow ? [52, h / 2 + 14, w - 10, h - 2 * px - 6] : [w / 2 + 52, 10, w - 10, h - 2 * px - 6];
+        // ENOB to match, horizontal bars
+        const ci = fmtT.head.indexOf('ENOB to match'), maxE = 12, [l, t, r, b] = A, bh = (b - t) / (fmtT.rows.length + 0.5);
+        g.strokeStyle = col('border'); g.strokeRect(l, t, r - l, b - t);
+        fmtT.rows.forEach((row, i) => { const v = window.fopNum(row[ci]); g.fillStyle = col(['orange', 'amber', 'teal'][i % 3]); g.fillRect(l, t + 6 + i * bh, v / maxE * (r - l), bh - 10); txt(g, `${row[0]}: ${row[ci]}`, l + 6, t + 6 + i * bh + bh / 2 + 2, col('card')); });
+        const x8 = l + 8 / maxE * (r - l); line(g, [[x8, t], [x8, b]], col('acc'), 2, [5, 3]); txt(g, '8 (illustrative)', x8 + 4, b - 6, col('acc'));
+        txt(g, 'ENOB to match', (l + r) / 2, b + px + 4, col('sec'), 'center');
+        // averaging vs planes for length 4,096
+        const row = pas.rows.find(rr => rr[0] === '4,096') || pas.rows[1], [l2, t2, r2, b2] = Bx;
+        const Y = axesLog(g, l2, r2, t2, b2, 1e-3, 2e-2, px, ''), cols = pas.head.slice(1), bw = (r2 - l2) / cols.length;
+        cols.forEach((c, i) => { const v = window.fopNum(row[i + 1]); g.fillStyle = /planes/.test(c) ? col('orange') : col('teal'); g.fillRect(l2 + i * bw + 8, Y(v), bw - 16, b2 - Y(v)); txt(g, c.replace(' averaged', '').replace('2 digit planes of 8 bits', 'planes'), l2 + i * bw + bw / 2, b2 + px + 4, col('sec'), 'center'); });
+        window.fopFig.buy = { formats: fmtT.rows.length, passes: cols.length };
+    }
+    function drawConv() {
+        const cv = $('fig-conv'), tb = cv && cv.closest('.diagram-panel').querySelector('table'); if (!tb) return;
+        const T = window.fopTable(tb), ci = T.head.indexOf('Pair pJ');
+        const { g, w, h } = window.fopCanvas(cv, 0.62), px = font(g, w), L = 52, R = w - 8, Tp = 8, B = h - 2 * px - 8;
+        const Y = axesLog(g, L, R, Tp, B, 0.1, 1e4, px, 'pJ per value in + out'), bw = (R - L) / T.rows.length;
+        T.rows.forEach((r, i) => { const v = window.fopNum(r[ci]); g.fillStyle = col('amber'); g.fillRect(L + i * bw + 4, Y(v), bw - 8, B - Y(v)); txt(g, r[0], L + i * bw + bw / 2, B + px + 2, col('sec'), 'center'); });
+        txt(g, 'ENOB', (L + R) / 2, B + 2 * px + 6, col('sec'), 'center');
+        window.fopFig.conv = { bars: T.rows.length };
+    }
+    [drawEnob, drawBuy, drawConv].forEach(f => { f(); redraws.push(f); });
+
+    // ── slide 10b: bit planes ───────────────────────────────────────────
+    if ($('anim-planes')) {
+        const X = [200, 13, 255, 0, 77, 128, 31, 190], H = [3, 1, 4, 1, 5, 9, 2, 6], B = 8, Q = 257;
+        let run = M.bitPlaneRun(X, H, B, 0.15, 1);
+        const sigma = () => Number($('bp-sigma').value);
+        function draw(step, frac) {
+            const cv = $('cv-planes'), narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 1.55 : 0.5), px = font(g, w);
+            const b = Math.min(step, B - 1), fin = step >= B, e = ease(frac);
+            // (1) the bits: 8 values x 8 planes
+            const gx = 8, gy = px + 12, cell = Math.min((narrow ? w * 0.55 : w * 0.3) / 9, 26);
+            txt(g, 'inputs, bit by bit', gx, px + 2, col('sec'));
+            for (let i = 0; i < 8; i++) {
+                txt(g, String(X[i]), gx + 8 * cell + 6, gy + i * cell + cell * 0.7, col('sec'));
+                for (let bb = 0; bb < B; bb++) {
+                    const bit = (X[i] >> bb) & 1, cx = gx + (B - 1 - bb) * cell, cy = gy + i * cell;
+                    g.fillStyle = bit ? (bb === b && !fin ? col('acc') : col('teal')) : col('code'); g.globalAlpha = !fin && bb !== b ? (bb < b ? 0.35 : 0.8) : 1;
+                    g.fillRect(cx + 1, cy + 1, cell - 2, cell - 2); g.globalAlpha = 1;
+                }
+            }
+            if (!fin) { g.strokeStyle = col('acc'); g.lineWidth = 2; g.strokeRect(gx + (B - 1 - b) * cell, gy, cell, 8 * cell); txt(g, `plane ${b} (×${2 ** b})`, gx + (B - 1 - b) * cell + cell / 2, gy + 8 * cell + px + 4, col('acc'), 'center'); }
+            // (2) this plane's transform output, read and rounded
+            const ox = narrow ? 8 : w * 0.38, oy = narrow ? gy + 8 * cell + 2 * px + 16 : 8, ow = narrow ? w - 16 : w * 0.3, oh = narrow ? h * 0.26 : h - 2 * px - 20;
+            g.strokeStyle = col('border'); g.strokeRect(ox, oy, ow, oh);
+            const sum = H.reduce((a, c) => a + c, 0), bw = ow / 8, Y = v => oy + oh - v / (sum + 2) * oh;
+            if (!fin) {
+                txt(g, `T(plane ${b}): 0 to ${sum}`, ox + 4, oy + px + 2, col('sec'));
+                run.ideal[b].forEach((v, i) => {
+                    g.fillStyle = col('amber'); g.globalAlpha = 0.85; g.fillRect(ox + i * bw + 4, Y(v * e), bw - 8, oh - (Y(v * e) - oy)); g.globalAlpha = 1;
+                    const rd = run.read[b][i], ok = rd === v;
+                    if (frac > 0.5 || step < 0) { g.fillStyle = ok ? col('acc') : col('orange'); g.beginPath(); g.arc(ox + i * bw + bw / 2, Y(rd), 4, 0, 2 * Math.PI); g.fill(); }
+                });
+            } else txt(g, 'all planes done', ox + 4, oy + px + 2, col('sec'));
+            // (3) the running sum against the exact result
+            const ax = narrow ? 8 : w * 0.71, ay = narrow ? oy + oh + 14 : 8, aw = narrow ? w - 16 : w * 0.28, ah = narrow ? h - ay - 2 * px - 8 : h - 2 * px - 20;
+            g.strokeStyle = col('border'); g.strokeRect(ax, ay, aw, ah);
+            const acc = new Array(8).fill(0); for (let bb = 0; bb <= b; bb++) for (let i = 0; i < 8; i++) acc[i] += run.read[bb][i] * 2 ** bb;
+            const ex = run.exact, mx = Math.max(...ex) * 1.08, Ya = v => ay + ah - v / mx * ah, aw8 = aw / 8;
+            ex.forEach((v, i) => { g.strokeStyle = col('sec'); g.lineWidth = 1; g.strokeRect(ax + i * aw8 + 4, Ya(v), aw8 - 8, ay + ah - Ya(v)); });
+            acc.forEach((v, i) => { const wrong = fin && v !== ex[i]; g.fillStyle = wrong ? col('orange') : col('acc'); g.fillRect(ax + i * aw8 + 6, Ya(v), aw8 - 12, ay + ah - Ya(v)); });
+            txt(g, fin ? `exact? ${run.errors ? run.errors + ' wrong' : 'yes, all 8'}` : 'Σ 2^b · plane', ax + 4, ay + px + 2, fin && run.errors ? col('orange') : col('sec'));
+            if (fin) txt(g, `mod ${Q}: ${acc.map(v => v % Q).join(' ')}`, w / 2, h - 6, col('acc'), 'center');
+            else txt(g, `plane ${b}: ${run.read[b].join(' ')}`, w / 2, h - 6, col('sec'), 'center');
+            window.fopFig.planes = { step, errors: run.errors, sigma: sigma(), acc: acc.slice(), exact: ex.slice() };
+        }
+        const A = window.FopAnim('anim-planes', { steps: B + 1, draw, stepMs: 1600,
+            caption: s => s < B ? `Plane ${s}: bit ${s} of every input (0 or 1) goes through the transform; outputs are integers 0–${H.reduce((a, c) => a + c, 0)}, read with noise σ = ${sigma()} and rounded (${run.read[s].filter((v, i) => v !== run.ideal[s][i]).length} misread), then added with weight ${2 ** s}.`
+                                : `Recombined: ${run.errors ? run.errors + ' of 8 outputs wrong: the noise was too large to round.' : 'all 8 outputs equal the exact convolution.'} The FPGA then reduces mod ${Q}, as modular arithmetic would.` });
+        $('bp-sigma').addEventListener('input', () => { $('bp-sigma-val').textContent = sigma().toFixed(2); run = M.bitPlaneRun(X, H, B, sigma(), 1); A.redraw(); });
+        redraws.push(A.redraw);
+    }
+
+    let rt = 0;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => redraws.forEach(f => f()), 150); });
+})();
+
+</script>
 
 <!-- ════════════════════════════════════ Footer ════════════════════════════════════ -->
 <footer class="footer">
