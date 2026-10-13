@@ -1761,22 +1761,22 @@
 <section class="slide" id="slide-12b">
     <div class="slide-number">12b</div>
     <h2>Transformers' Linear Algebra and Optics</h2>
-    <p>A lens computes <strong>one fixed linear map</strong>, the Fourier transform; a 4f system adds one pointwise multiply in the Fourier plane. A transformer layer needs something else: <strong>learned weight matrices</strong>, products of two data streams, and nonlinear steps between them. Follow one layer through, step by step, and see which steps light could take.</p>
+    <p>Fourier optics computes <strong>one fixed linear map</strong>, the Fourier transform, whether it is built as a lens in free space or as a passive transform device on a chip (the link module's, <a href="#slide-08c">08c</a>). A free-space 4f system adds one pointwise multiply, a mask in the Fourier plane; on a chip that multiply needs a row of modulators between a transform and an inverse transform, or else it happens after detection, in electronics. A transformer layer needs something else: <strong>learned weight matrices</strong>, products of two data streams, and nonlinear steps between them. Follow one layer through, step by step, and see which steps light could take.</p>
     <div class="fig" id="anim-layer">
         <div class="control-row"><label for="ly-variant">Layer</label><select id="ly-variant"><option value="transformer" selected>Transformer (Llama-3-8B shape)</option><option value="fnet">FNet-shaped mixing</option><option value="hyena">Hyena-2</option><option value="circulant">Hyena-2 + block-circulant weights</option></select></div>
         <div class="control-row"><label for="ly-opt"><input type="checkbox" id="ly-opt" checked> Assume a programmable optical matmul (MZI mesh or crossbar)</label></div>
         <canvas id="cv-layer" aria-label="Animation of one layer, step by step: each step sits in the light lane or the electronics lane according to what optics could do, with a DAC or ADC marker at every crossing and a running count of conversions"></canvas>
-        <p class="fig-cap">Each step is tagged by what optics could do with it: <span style="color: var(--c-teal)">FT</span> a transform or convolution (Fourier optics: a lens, or 4f + mask), <span style="color: var(--c-blue)">MM</span> a matrix multiply by learned weights or by other data (needs a programmable matmul, which is not Fourier optics), <span style="color: var(--c-orange)">NL</span> nonlinear or data &times; data (must leave the optics). Every crossing between light and electronics is a <span style="color: var(--c-amber)">DAC or ADC per value</span>. Consecutive optical steps are assumed to stay in light, which is optimistic. The sequence is computed by <code>opticalPlan</code> and checked by a node test. Untick the box: a standard decoder then has nothing for optics to do at all.</p>
+        <p class="fig-cap">Each step is tagged by what optics could do with it: <span style="color: var(--c-teal)">FT</span> a transform or convolution (Fourier optics: a lens or an on-chip transform; for a convolution, 4f + mask, or transform, modulators, inverse transform on a chip), <span style="color: var(--c-blue)">MM</span> a matrix multiply by learned weights or by other data (needs a programmable matmul, which is not Fourier optics), <span style="color: var(--c-orange)">NL</span> nonlinear or data &times; data (must leave the optics). Every crossing between light and electronics is a <span style="color: var(--c-amber)">DAC or ADC per value</span>. Consecutive optical steps are assumed to stay in light, which is optimistic. The sequence is computed by <code>opticalPlan</code> and checked by a node test. Untick the box: a standard decoder then has nothing for optics to do at all.</p>
     </div>
     <div class="fig">
         <canvas id="cv-circ" aria-label="Side by side: a circulant 8 by 8 matrix, defined by 8 numbers, applied by a 4f system with an 8-value mask; a general 8 by 8 matrix, applied as U Sigma V-star by two meshes of 28 Mach-Zehnder interferometers and 8 attenuators"></canvas>
-        <p class="fig-cap">Left: a circulant matrix (every row a shift of one vector) is exactly what a 4f system with a mask applies; the check computes Wx both ways (<code>circulant</code>, <code>circApplyFFT</code>). Right: a general learned matrix needs a programmable mesh: two unitary meshes of N(N&minus;1)/2 Mach&ndash;Zehnder interferometers and N attenuators, N&sup2; settings in all (Reck/Clements; <code>mziCount</code>).</p>
+        <p class="fig-cap">Left: a circulant matrix (every row a shift of one vector) is exactly what a transform, a pointwise multiply and an inverse transform apply: a 4f system with a mask, or on a chip two transform devices with a row of modulators between them; the check computes Wx both ways (<code>circulant</code>, <code>circApplyFFT</code>). Right: a general learned matrix needs a programmable mesh: two unitary meshes of N(N&minus;1)/2 Mach&ndash;Zehnder interferometers and N attenuators, N&sup2; settings in all (Reck/Clements; <code>mziCount</code>).</p>
     </div>
     <div class="diagram-grid cols-2">
         <div class="diagram-panel accent-border">
             <h4>1 &middot; The convolution route</h4>
-            <p>4f + mask multiplies by a circulant matrix, so it helps only if the weights are circulant. With block-circulant weights the transform work is 13.99% of prefill FLOPs at 2,048 tokens, or 84.54% (Amdahl bound 6.469x) with the LM head on the last token only. That is speculative: no published LLM uses such weights (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-08">deck 02, &ldquo;Structured Weights: Circulant and Monarch&rdquo;</a>).</p>
-            <p><strong>The mask is the weights:</strong> 269 mask rewrites per Hyena-2 forward pass at 2,048 tokens take 261 ms on an 8-bit micromirror device (1.03 kHz), against 59.033 ms for a GPU's whole prefill (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-11">deck 02, &ldquo;Holding the Weights: Fourier-Plane Mask Capacity&rdquo;</a>).</p>
+            <p>Transform, pointwise multiply, inverse transform (4f + mask in free space; two transforms with modulators between them on a chip) multiplies by a circulant matrix, so it helps only if the weights are circulant. With block-circulant weights the transform work is 13.99% of prefill FLOPs at 2,048 tokens, or 84.54% (Amdahl bound 6.469x) with the LM head on the last token only. That is speculative: no published LLM uses such weights (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-08">deck 02, &ldquo;Structured Weights: Circulant and Monarch&rdquo;</a>).</p>
+            <p><strong>The mask is the weights:</strong> 269 mask rewrites per Hyena-2 forward pass at 2,048 tokens take 261 ms on an 8-bit micromirror device (1.03 kHz), against 59.033 ms for a GPU's whole prefill (<a href="https://brendanjameslynskey.github.io/FOptInf_02_Transforms_in_Inference_Workloads/#slide-11">deck 02, &ldquo;Holding the Weights: Fourier-Plane Mask Capacity&rdquo;</a>). On a chip the frame-rate limit goes: the filter values are driven onto modulators at the electrical clock. But each one is another DAC sample per value per pass, and a chip offers tens to hundreds of channels, not millions of pixels. A passive transform device, like the link module's, has no place for the multiply in the light at all; the paper does not say how its multiply and MAC operations map onto the optics.</p>
         </div>
         <div class="diagram-panel accent-border">
             <h4>2 &middot; Models that mix by Fourier transform</h4>
@@ -2067,7 +2067,7 @@
     function captured(e, idx) { const tot = e.reduce((s, v) => s + v, 0); return idx.reduce((s, i) => s + e[i], 0) / tot; }
 
     // ── 9. A transformer layer, step by step: what optics could do ───────
-    // kind: 'ft' = a transform or convolution (Fourier optics can do it: a lens, or 4f + mask);
+    // kind: 'ft' = a transform or convolution (Fourier optics can do it: a lens or on-chip transform; 4f + mask, or modulators between two on-chip transforms);
     //       'mm' = a matrix multiply by learned weights or by other data (needs a programmable matmul, not FO);
     //       'nl' = nonlinear, or a product of two data streams (must leave the optics).
     const LAYERS = {
@@ -2086,7 +2086,7 @@
             ['up/gate', 'mm', 'MLP up and gate projections (learned weights)'], ['SwiGLU', 'nl', 'SwiGLU activation'],
             ['down', 'mm', 'MLP down projection (learned weights)']],
     };
-    LAYERS.circulant = LAYERS.hyena.map(([s, k, d]) => k === 'mm' ? [s, 'ft', d.replace('(learned weights)', '(block-circulant: 4f + mask)')] : [s, k, d]);
+    LAYERS.circulant = LAYERS.hyena.map(([s, k, d]) => k === 'mm' ? [s, 'ft', d.replace('(learned weights)', '(block-circulant: FT route)')] : [s, k, d]);
     function layerOps(variant) { return LAYERS[variant].map(([short, kind, name]) => ({ short, kind, name })); }
     // The state sequence of the animation: one state per step, then a last state for the return to the residual stream.
     // optMatmul: a programmable optical matmul (MZI mesh, crossbar) is assumed to exist, so 'mm' steps run in light too.
@@ -3041,7 +3041,7 @@
             if (which === 0) {
                 txt(g, 'circulant W: each row a shift', x0, y0 + px, col('acc'));
                 heat(C, x0, y0 + px + 10);
-                const lines = ['N = 8 numbers define', 'all 64 entries', '', `max |Wx − 4f(x)|`, `= ${err.toExponential(1)}`];
+                const lines = ['N = 8 numbers define', 'all 64 entries', '', `max |Wx − FT path|`, `= ${err.toExponential(1)}`];
                 lines.forEach((t, i) => txt(g, t, lx, y0 + px + 10 + (i + 1) * (px + 6), i >= 3 ? col('acc') : col('sec')));
                 // the 4f picture: input, lens, mask, lens, output
                 const yb = y0 + px + 10 + Math.max(s, 4 * (px + 6)) + 34, x1 = x0 + 8, x2 = x0 + pw - 8;
@@ -3049,8 +3049,8 @@
                 lens(x1 + (x2 - x1) * 0.25, yb, 22); lens(x1 + (x2 - x1) * 0.75, yb, 22);
                 g.fillStyle = col('amber'); g.fillRect(x1 + (x2 - x1) * 0.5 - 4, yb - 22, 8, 44);
                 txt(g, 'x', x1, yb - 8, col('text')); txt(g, 'Wx', x2, yb - 8, col('text'), 'right');
-                txt(g, 'lens', x1 + (x2 - x1) * 0.25, yb + 36, col('teal'), 'center'); txt(g, 'mask: 8 values', x1 + (x2 - x1) * 0.5, yb + 36, col('amber'), 'center'); txt(g, 'lens', x1 + (x2 - x1) * 0.75, yb + 36, col('teal'), 'center');
-                txt(g, '4f + mask: Fourier optics', x0, yb + 36 + px + 10, col('teal'));
+                txt(g, 'FT', x1 + (x2 - x1) * 0.25, yb + 36, col('teal'), 'center'); txt(g, '× 8 values', x1 + (x2 - x1) * 0.5, yb + 36, col('amber'), 'center'); txt(g, 'FT⁻¹', x1 + (x2 - x1) * 0.75, yb + 36, col('teal'), 'center');
+                txt(g, 'FT, multiply, FT⁻¹: 4f or chip', x0, yb + 36 + px + 10, col('teal'));
             } else {
                 txt(g, 'general W: learned, any values', x0, y0 + px, col('acc'));
                 heat(Wg, x0, y0 + px + 10);
