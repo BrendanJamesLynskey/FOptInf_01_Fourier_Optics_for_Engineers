@@ -861,7 +861,7 @@
     .s-line { stroke: var(--text-secondary); stroke-width: 1.5; fill: none; }
     .s-wave { stroke: var(--c-teal); stroke-width: 2; fill: none; }
     #slide-00 .contents-list li::before { content: attr(data-n); min-width: 2.4rem; }   /* show the slide's own id (02b, 08c ...) */
-    .narrow-only { display: none; }
+    .narrow-only, .fig svg.narrow-only { display: none; }   /* must outrank .fig svg { display: block } */
     @media (max-width: 640px) { .fig { padding: 0.45rem; } .anim-caption { font-size: 0.74rem; }
         .fig svg.wide-only, .fig .wide-only { display: none; } .fig svg.narrow-only, .fig .narrow-only { display: block; } }
 </style>
