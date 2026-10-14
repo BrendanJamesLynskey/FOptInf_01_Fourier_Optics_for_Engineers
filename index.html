@@ -1001,7 +1001,20 @@
     <p class="eq">x = f tan&theta; &asymp; &lambda; f u</p>
     <div class="fig" id="anim-2f">
         <canvas id="cv-2f" aria-label="Ray animation: five plane-wave components leave the input, lens 1 focuses each to its own point in the Fourier plane, lens 2 recollimates them into a mirrored output"></canvas>
-        <p class="fig-cap">Paraxial ray transfer, traced by the model (<code>trace4f</code>): every ray of slope s reaches height f&middot;s in the Fourier plane, whatever its starting height, and leaves the output at height &minus;y<sub>0</sub>. Five components (u = &minus;2u<sub>0</sub> &hellip; 2u<sub>0</sub>); angles exaggerated for visibility.</p>
+        <p class="fig-cap">Paraxial ray transfer, traced by the model (<code>trace4f</code>): every ray of slope s reaches height f&middot;s in the Fourier plane, whatever its starting height, and leaves the output at height &minus;y<sub>0</sub>. Five components (u = &minus;2u<sub>0</sub> &hellip; 2u<sub>0</sub>); angles exaggerated for visibility. Each colour is one plane-wave component, a bundle of parallel rays from the whole input, not a single input point.</p>
+    </div>
+    <div class="diagram-panel accent-border">
+    <h4>Why that point holds the transform: path lengths</h4>
+    <p>Light from <strong>every</strong> input point reaches <strong>every</strong> point of the Fourier plane. The paths are millions of wavelengths long; only their <strong>differences, as fractions of a wavelength</strong>, matter, because they set the phase each contribution arrives with.</p>
+    <ul>
+        <li><strong>On the axis (DC)</strong> the lens makes every path the same length, so every contribution arrives in phase and the field is the plain sum of the input.</li>
+        <li><strong>Off the axis</strong>, at height x, the path from input height y is shorter by x&middot;y/f. That difference grows steadily across the input and wraps through a whole wavelength every &lambda;f/x of input height.</li>
+        <li>The contributions add up (interfere constructively) only if the input ripples with that same period, spatial frequency u = x/(&lambda;f); for any other frequency they cancel. The field at x therefore measures how much of frequency u the input holds: the Fourier transform. With pixels at the input and the detector, each such point becomes a DFT bin (<a href="#slide-07b">slide 07b</a>).</li>
+    </ul>
+    </div>
+    <div class="fig" id="anim-paths">
+        <canvas id="cv-paths" aria-label="Animation: twelve input points with a two-cycle ripple send light to one Fourier-plane point; a dial at each point shows its extra path in wavelengths; the contributions are added head to tail. At DC they line up; at one and three steps off axis they cancel; at two steps, matching the ripple, they add to a large sum"></canvas>
+        <p class="fig-cap">Twelve input points with amplitude 1 + cos(2&pi;&middot;2y/D), a ripple of two cycles across the input (bars), and one Fourier-plane point stepped from the axis outwards. Each dial is that point's extra path from the input point, one turn per wavelength; each arrow is that point's contribution, its length the amplitude and its angle the phase. The sum (dashed) is DFT bin k of the input, checked in the tests (<code>pathPhasors</code>): 12 at DC, 6 at 2u<sub>0</sub>, 0 elsewhere.</p>
     </div>
     <div class="diagram-grid cols-2">
         <div class="diagram-panel accent-border">
@@ -1914,6 +1927,19 @@
         s = s - y / f; y = y + f * s;  pts.push([4 * f, y]);  // output: y = -y0 (inverted)
         return { pts, sOut: s };
     }
+    // Why the Fourier plane holds the transform, counted in path lengths. N input points at heights y_j = j*d;
+    // the point x_k = k * lambda f / (N d) of the back focal plane. Paraxially the path from y_j to x_k is
+    // L0 - x_k y_j / f, so its extra path, in wavelengths, is -k j / N: zero for every j on the axis (DC), and a
+    // ramp that wraps k times across the input elsewhere. Each input point adds a phasor a_j exp(-2 pi i k j / N);
+    // their sum is DFT bin k of the input.
+    function pathPhasors(a, k) {
+        const N = a.length, extra = [], ar = [], ai = []; let sr = 0, si = 0;
+        for (let j = 0; j < N; j++) {
+            const w = ((k * j) % N) / N, ph = -2 * Math.PI * k * j / N;
+            extra.push(w); ar.push(a[j] * Math.cos(ph)); ai.push(a[j] * Math.sin(ph)); sr += ar[j]; si += ai[j];
+        }
+        return { extra, ar, ai, sr, si, mag: Math.hypot(sr, si) };
+    }
 
     // ── 2. Scale and coherence ───────────────────────────────────────────
     // A finite amplitude grating (period p, duty 1/2) sampled at dx; its far-field intensity is |DFT|^2.
@@ -2122,7 +2148,7 @@
     // An N x N matrix on an MZI mesh: W = U S V*, two unitary meshes of N(N-1)/2 MZIs (Reck/Clements) and N attenuators
     function mziCount(n) { return { perUnitary: n * (n - 1) / 2, attenuators: n, total: n * (n - 1) + n }; }
 
-    const API = { rng, gauss, fft, dft, fft2, fftshift2, fourierX, fourierXExact, trace4f, grating, powerSpectrum, intensityAt,
+    const API = { rng, gauss, fft, dft, fft2, fftshift2, fourierX, fourierXExact, trace4f, pathPhasors, grating, powerSpectrum, intensityAt,
         multiIntensity, sinc, pixelFT, balanced, twoBeam, slabField, fftStages, opticsRateGBps, radixStages, bitPlanes,
         cyclicConv, readPlane, recombine, bitPlaneRun, prbs, nrz, lowpass, eye, flipFloat32Bit, chunk, binEnergy, lowBand,
         topK, captured, layerOps, opticalPlan, circulant, matVec, circApplyFFT, mziCount };
@@ -2361,6 +2387,61 @@
             window.fopFig.f2 = { step, z, spots: ks.map(k => M.trace4f(0.2, k * s0, 1).pts[2][1]) };
         }
         const A = window.FopAnim('anim-2f', { steps: CAP.length, draw, caption: s => `Step ${s + 1}: ${CAP[s]}`, stepMs: 1800 });
+        redraws.push(A.redraw);
+    }
+
+    // ── slide 02b: why it is a Fourier transform, counted in path lengths ──
+    if ($('anim-paths')) {
+        const N = 12, a = Array.from({ length: N }, (_, j) => 1 + Math.cos(2 * Math.PI * 2 * j / N)), KS = [0, 1, 2, 3];
+        const hueOf = j => ['blue', 'teal', 'acc', 'amber', 'orange', 'violet'][j % 6];
+        function draw(step, frac) {
+            const cv = $('cv-paths'), narrow = cv.clientWidth < 560, { g, w, h } = window.fopCanvas(cv, narrow ? 1.3 : 0.46), px = font(g, w);
+            const k = KS[step], P = M.pathPhasors(a, k), shown = Math.max(1, Math.ceil(ease(frac) * N));
+            // panel 1: the input (amplitude bars and a phase dial per point) fanning to one Fourier-plane point
+            const fw = narrow ? w : w * 0.56, fh = narrow ? h * 0.46 : h;
+            const top = px + 10, bot = fh - px - 12, yOf = j => top + (j + 0.5) * (bot - top) / N;
+            const xIn = 46, xLens = fw * 0.62, xF = fw - 20, yAxis = (top + bot) / 2;
+            const yF = yAxis - k * (bot - top) / 9;
+            txt(g, 'input a(y)', 4, px, col('sec'));
+            txt(g, 'lens', xLens, px, col('teal'), 'center'); txt(g, 'Fourier plane', xF, px, col('acc'), 'right');
+            line(g, [[xF, top], [xF, bot]], col('acc'), 2);
+            g.fillStyle = 'rgba(151,205,198,0.15)'; g.strokeStyle = col('teal'); g.beginPath(); g.ellipse(xLens, yAxis, 6, (bot - top) / 2, 0, 0, 2 * Math.PI); g.fill(); g.stroke();
+            const dr = Math.min(9, (bot - top) / N / 2 - 1);
+            for (let j = 0; j < N; j++) {
+                const y = yOf(j), on = j < shown, c = col(hueOf(j));
+                g.fillStyle = col('text'); g.globalAlpha = 0.8; g.fillRect(xIn - 12 - a[j] * 14, y - 2, a[j] * 14, 4); g.globalAlpha = 1;
+                // the extra path, in wavelengths, as a dial: a full turn = one wavelength
+                g.strokeStyle = col('border'); g.lineWidth = 1; g.beginPath(); g.arc(xIn, y, dr, 0, 2 * Math.PI); g.stroke();
+                const ph = -2 * Math.PI * P.extra[j];
+                line(g, [[xIn, y], [xIn + dr * Math.cos(ph), y + dr * Math.sin(ph)]], on ? c : col('border'), 2);
+                if (on) { g.globalAlpha = 0.25 + 0.6 * a[j] / 2; line(g, [[xIn + dr + 2, y], [xLens, yAxis + (y - yAxis) * 0.9], [xF, yF]], c, 1.2); g.globalAlpha = 1; }
+            }
+            g.fillStyle = col('acc'); g.beginPath(); g.arc(xF, yF, 5, 0, 2 * Math.PI); g.fill();
+            txt(g, k === 0 ? 'DC' : `${k}u0`, xF - 8, yF - 8, col('acc'), 'right');
+            txt(g, 'dial: extra path to this point (1 turn = 1 λ)', 4, fh - 4, col('sec'));
+            // panel 2: the contributions head to tail, and their sum
+            const x0 = narrow ? 0 : fw + 10, y0 = narrow ? fh + 4 : 0, pw = w - x0, ph2 = h - y0;
+            txt(g, 'contributions added head to tail', x0 + 4, y0 + px, col('sec'));
+            const R = Math.min(pw, ph2 - 3 * px - 16) / 2 - 6, sc = R / N * 1.8, cx = x0 + pw / 2, cy = y0 + px + 10 + R;
+            line(g, [[cx - R, cy], [cx + R, cy]], col('border'), 1, [3, 3]); line(g, [[cx, cy - R], [cx, cy + R]], col('border'), 1, [3, 3]);
+            const ox = k === 0 ? cx - R * 0.95 : cx, oy = cy;
+            let hx = ox, hy = oy, sr = 0, si = 0;
+            for (let j = 0; j < shown; j++) {
+                const nx = hx + P.ar[j] * sc, ny = hy - P.ai[j] * sc;
+                line(g, [[hx, hy], [nx, ny]], col(hueOf(j)), 2.2); hx = nx; hy = ny; sr += P.ar[j]; si += P.ai[j];
+            }
+            g.fillStyle = col('text'); g.beginPath(); g.arc(ox, oy, 3, 0, 2 * Math.PI); g.fill();
+            if (shown === N) { line(g, [[ox, oy], [hx, hy]], col('acc'), 3.5, [6, 3]); g.fillStyle = col('acc'); g.beginPath(); g.arc(hx, hy, 4.5, 0, 2 * Math.PI); g.fill(); }
+            txt(g, `|sum| = ${fmt(Math.hypot(sr, si), 2)}  (input total ${fmt(a.reduce((s, v) => s + v, 0), 0)})`, x0 + 4, h - 6, col('acc'));
+            window.fopFig.paths = { step, k, shown, mag: Math.hypot(sr, si), extra: P.extra };
+        }
+        const CAP = [
+            'The point on the axis (DC). The lens makes every path from the input to this point the same length, so every dial reads zero and every contribution arrives in phase: the arrows line up, and the field here is the total of the input.',
+            'A point one step off the axis (u0: one cycle across the input). The extra path grows steadily across the input and wraps through one wavelength: the dials turn once. The input ripples twice, not once, so the arrows curl round and cancel: this point stays dark.',
+            'Two steps off the axis (2u0). Now the extra path wraps twice across the input, in step with its ripple: the bright points all arrive at one phase, the dim points at the opposite phase but weakly. The sum is large: this point lights up, measuring how much 2u0 ripple the input holds.',
+            'Three steps off the axis (3u0): three wraps against a two-cycle ripple. The arrows cancel again. Only the frequencies the input actually contains light up: that is its Fourier transform.',
+        ];
+        const A = window.FopAnim('anim-paths', { steps: KS.length, draw, caption: s => `Point ${s + 1} of ${KS.length}: ${CAP[s]}`, stepMs: 2200 });
         redraws.push(A.redraw);
     }
 
