@@ -1788,7 +1788,7 @@
     <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Fourier_Optics_Inference/blob/main/analysis/results.md">results.md</a>, section &ldquo;6. Analogue precision&rdquo;</p>
     <div class="fig">
         <canvas id="fig-buy" aria-label="Two charts from the tables above: the ENOB each number format needs, and the error after averaging 1, 4 and 16 passes or using digit planes"></canvas>
-        <p class="fig-cap">Left: ENOB to match each format (first table), against the 8 effective bits this series assumes for the analogue chain (illustrative). Right: error at ENOB 8 for length 4,096 (second table): averaging moves it, digit planes do not.</p>
+        <p class="fig-cap">Left: ENOB to match each format (first table), against the 8 effective bits this series assumes for the analogue chain (illustrative). Right: error at ENOB 8 for length 4,096 (second table): averaging moves it, digit planes do not. A simulator of a stacked photonic chip later found far fewer: 2.74 effective bits for one optical stage and 3.198 for six chained stages, with 8-bit converters (<a href="https://brendanjameslynskey.github.io/FOptInf_05_AI_Workloads_on_a_Stacked_Photonic_Chip/#slide-05">deck 05</a>).</p>
     </div>
     <ul>
         <li><strong>Averaging works, expensively:</strong> k passes cut random noise by &radic;k, so each extra bit costs 4&times; the passes (Garg et al., <a href="https://arxiv.org/abs/2102.06365">arXiv:2102.06365</a>, who choose precision per layer). Reaching BF16's error from ENOB 8 takes 26 passes (first table, last column).</li>
@@ -1876,7 +1876,7 @@
         <tr><th>Property</th><th>Free-space 4f engine</th><th>On-chip, as in the link module (<a href="#slide-15">15</a>)</th><th>What it means for a workload</th></tr>
         <tr><td>Transform cost</td><td>Time of flight; no operation count</td><td>Time of flight too (picoseconds across the chip); the size is fixed by the waveguides, larger transforms by decomposition (the module's FHE run: 256-point pieces)</td><td>Long transforms are as cheap as short ones, once the data is in; on a chip, only up to the device's size per pass</td></tr>
         <tr><td>Parallelism and rate</td><td>Millions of pixels; many 1-D transforms per frame, frames at the SLM's rate</td><td>Tens to hundreds of waveguides, 1-D; a new vector per modulator symbol (14 GBaud, four channels in the module); WDM could multiply it</td><td>Free space wants batches of independent transforms; a chip wants a fast stream of small ones, such as data passing through a link</td></tr>
-        <tr><td>Precision</td><td>Analogue; this series assumes about 8 effective bits (illustrative)</td><td>Analogue; not reported for the module, which takes binary (NRZ) input and adds error correction (bit planes, <a href="#slide-19">19</a>)</td><td>Fine for FP8/INT8-like error, short of BF16 without averaging; exact integer arithmetic only for small blocks or by bit planes</td></tr>
+        <tr><td>Precision</td><td>Analogue; this series assumes about 8 effective bits (illustrative). A simulator of a stacked photonic chip finds about 3 in its approximate mode (<a href="https://brendanjameslynskey.github.io/FOptInf_05_AI_Workloads_on_a_Stacked_Photonic_Chip/#slide-05">deck 05</a>)</td><td>Analogue; not reported for the module, which takes binary (NRZ) input and adds error correction (bit planes, <a href="#slide-19">19</a>)</td><td>Fine for FP8/INT8-like error, short of BF16 without averaging; exact integer arithmetic only for small blocks or by bit planes</td></tr>
         <tr><td>Conversions</td><td>One DAC sample in and one ADC sample out per value, energy &prop; 2<sup>ENOB</sup></td><td>A modulator symbol in and a detector read-out per value; binary input needs only 1-bit drivers, but one pass per bit plane</td><td>Needs many operations per converted value to pay</td></tr>
         <tr><td>Weights</td><td>On the Fourier-plane mask, rewritten at the SLM's frame rate</td><td>A passive diffractive device is fixed when it is made: one transform, no mask; a fixed band means reading only some outputs (<a href="#slide-23">23</a>). Learned weights need a programmable mesh or the digital side</td><td>Free space wants weights held across a batch (prefill, not decode); a passive chip suits a transform that never changes</td></tr>
         <tr><td>Signs and phase</td><td>Lost at a square-law detector unless detected coherently</td><td>Balanced photodiodes: coherent detection, built in</td><td>Coherent detection, or twice the passes</td></tr>
@@ -2459,7 +2459,7 @@
             if (k === 'play') { if (st.playing) { st.userPaused = true; pause(); } else { st.userPaused = false; play(); } }
             else { st.userPaused = true; pause(); go(k === 'reset' ? 0 : st.step + (k === 'fwd' ? 1 : -1), false); }
         });
-        scrub.addEventListener('input', () => { st.userPaused = true; pause(); go(Number(scrub.value), false); });
+        scrub.addEventListener('input', () => { const v = Number(scrub.value); st.userPaused = true; pause(); go(v, false); });   // read before pause() re-renders
         root.addEventListener('keydown', e => {
             if (e.target.closest('select, input')) return;
             if (e.key === ' ') { e.preventDefault(); bar.querySelector('[data-a="play"]').click(); }
